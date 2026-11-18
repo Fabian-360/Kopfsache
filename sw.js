@@ -1,5 +1,5 @@
 // Kopfsache – Offline-Speicher
-const V = 'kopfsache-v4';
+const V = 'kopfsache-v5';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'content.json'];
 
 self.addEventListener('install', e => {
@@ -29,8 +29,16 @@ self.addEventListener('fetch', e => {
     return;
   }
   // App selbst: sofort aus dem Speicher, im Hintergrund aktualisieren
+  // App-Seite: zuerst frisch aus dem Netz (Updates sofort), offline aus dem Speicher
+  if (url.origin === location.origin && req.mode === 'navigate') {
+    e.respondWith(fetch(req, { cache: 'no-cache' }).then(res => {
+      if (res.ok) { const copy = res.clone(); caches.open(V).then(c => c.put('index.html', copy)); }
+      return res;
+    }).catch(() => caches.match('index.html')));
+    return;
+  }
   if (url.origin === location.origin) {
-    const key = req.mode === 'navigate' ? 'index.html' : req;
+    const key = req;
     e.respondWith(caches.match(key, { ignoreSearch: true }).then(hit => {
       const net = fetch(req).then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(V).then(c => c.put(key, copy)); }
