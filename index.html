@@ -85,7 +85,8 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .cal b{display:block;color:#111;font-size:24px;font-weight:800;padding:5px 0 6px}
 .cd{font-weight:800;font-size:15px;color:var(--ink);line-height:1.15;text-align:right}.cd small{display:block;color:var(--muted);font-size:11px;font-weight:700}
 .cd.hot{color:var(--acc)}
-.examdate{position:absolute;inset:0;width:100%;height:100%;opacity:0;-webkit-appearance:none;appearance:none;border:0;cursor:pointer}
+.exin{display:block;width:100%;margin-top:6px;background:var(--card2);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:16px;font-weight:700;-webkit-appearance:none;appearance:none;min-height:48px;box-sizing:border-box}
+.exin::-webkit-calendar-picker-indicator{filter:invert(1)}
 .mdue{color:var(--gold)}
 .duebar{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:16px 20px;margin:0 0 18px;border-radius:var(--r);background:#000;border:2px solid var(--acc);color:var(--ink)}
 .duebar.ok{border-color:var(--line);background:var(--card)}
@@ -400,7 +401,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '28';
+const APP_VERSION = '29';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -958,17 +959,54 @@ function curSem(){
   return S.sem;
 }
 function setSem(n){ S.sem = n; const list = semList(); try { localStorage.setItem('kopfsache.sem', JSON.stringify({ sel:n, newest: list.length ? list[list.length-1].n : n })); } catch(e){} }
-const examDateOf = m => P.exams[m.id] || (m.examDate ? String(m.examDate).slice(0,10) : '');
+// Prüfungsdaten: Vorgabe aus dem Stoff, alles in der App überschreibbar (P.exams[modulId] = { date, time, info })
+function examOf(m){
+  const o = P.exams[m.id], base = { date: m.examDate ? String(m.examDate).slice(0,10) : '', time: m.examTime || '', info: m.examInfo || '' };
+  if (!o) return base;
+  if (typeof o === 'string') return Object.assign(base, { date: o });   // ältere Speicherung (nur Datum)
+  return { date: o.date != null ? o.date : base.date, time: o.time != null ? o.time : base.time, info: o.info != null ? o.info : base.info };
+}
+const examDateOf = m => examOf(m).date;
 function examCal(m){
-  const ds = examDateOf(m), MON = ['JAN','FEB','MÄR','APR','MAI','JUN','JUL','AUG','SEP','OKT','NOV','DEZ'];
-  let head = 'DATUM', day = '?', cd = 'Prüfung eintragen';
+  const ex = examOf(m), ds = ex.date, MON = ['JAN','FEB','MÄR','APR','MAI','JUN','JUL','AUG','SEP','OKT','NOV','DEZ'], WD = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  let head = 'DATUM', day = '?', cd = 'Prüfung eintragen', sub = 'zum Eintragen antippen';
   if (/^\d{4}-\d{2}-\d{2}$/.test(ds)){
-    const [y,mo,d] = ds.split('-').map(Number), ex = new Date(y, mo-1, d), t = new Date(); t.setHours(0,0,0,0);
-    const n = Math.round((ex - t) / DAY);
+    const [y,mo,d] = ds.split('-').map(Number), dt = new Date(y, mo-1, d), t = new Date(); t.setHours(0,0,0,0);
+    const n = Math.round((dt - t) / DAY);
     head = MON[mo-1]; day = d;
     cd = n > 1 ? `noch ${n} Tage` : n === 1 ? 'morgen!' : n === 0 ? 'heute!' : 'vorbei';
+    sub = [WD[dt.getDay()] + (ex.time ? ' ' + ex.time : ''), ex.info].filter(Boolean).join(' · ');
   }
-  return `<label class="calw" aria-label="Prüfungsdatum ändern"><span class="cal"><i>${head}</i><b>${day}</b></span><span class="cd${/Tage|vorbei|eintragen/.test(cd) ? '' : ' hot'}">${cd}<small>${!ds ? 'zum Eintragen antippen' : m.examInfo && !P.exams[m.id] ? esc(m.examInfo) : 'Prüfung'}</small></span><input type="date" class="examdate" data-mid="${esc(m.id)}" value="${esc(ds)}"></label>`;
+  return `<span class="calw" role="button" data-act="examEdit" data-mid="${esc(m.id)}" aria-label="Prüfung bearbeiten"><span class="cal"><i>${head}</i><b>${day}</b></span><span class="cd${/Tage|vorbei|eintragen/.test(cd) ? '' : ' hot'}">${cd}<small>${esc(sub)}</small></span></span>`;
+}
+function openExamEditor(mid){
+  const m = S.modules.find(x => x.id === mid); if (!m) return;
+  const ex = examOf(m), custom = !!P.exams[mid];
+  let el = document.getElementById('exed');
+  if (!el){ el = document.createElement('div'); el.id = 'exed'; el.className = 'edov'; document.body.appendChild(el);
+    el.addEventListener('click', ev => {
+      const b = ev.target.closest('[data-ex]'); if (!b){ if (ev.target.id === 'exed') el.remove(); return; }
+      const mid = el.dataset.mid, act = b.dataset.ex;
+      if (act === 'close'){ el.remove(); return; }
+      if (act === 'reset'){ delete P.exams[mid]; save(); el.remove(); render(); return; }
+      if (act === 'clear'){ P.exams[mid] = { date:'', time:'', info:'' }; save(); el.remove(); render(); return; }
+      if (act === 'save'){
+        P.exams[mid] = { date: el.querySelector('#exDate').value, time: el.querySelector('#exTime').value, info: el.querySelector('#exInfo').value.trim() };
+        save(); el.remove(); render();
+      }
+    });
+  }
+  el.dataset.mid = mid;
+  el.innerHTML = `<div class="edcard">
+    <div class="edtop"><h2>📅 Prüfung</h2><button class="gx" data-ex="close">✕</button></div>
+    <p class="edinfo" style="margin:0 0 4px">${esc(m.emoji||'')} ${esc(m.title)}</p>
+    <label class="edl">Datum<input type="date" id="exDate" class="exin" value="${esc(ex.date)}"></label>
+    <label class="edl">Uhrzeit<input type="time" id="exTime" class="exin" value="${esc(ex.time)}"></label>
+    <label class="edl">Ort / Info<small>z. B. Raum, Prüfungsform oder Hilfsmittel – erscheint unter dem Countdown</small><input type="text" id="exInfo" class="exin" value="${esc(ex.info)}" placeholder="z. B. C HS 1 · Open Book"></label>
+    <p class="edinfo" style="font-size:13px">Der Countdown und der Wochentag rechnen sich automatisch.</p>
+    <div class="btnrow" style="margin-top:12px"><button class="btn acc" data-ex="save">Speichern</button><button class="btn ghost" data-ex="close">Abbrechen</button></div>
+    <div class="edfoot">${custom && (m.examDate || m.examInfo) ? '<button class="btn ghost" data-ex="reset">↩️ Original wiederherstellen</button>' : ''}<button class="btn danger" data-ex="clear">🗑️ Prüfung entfernen</button></div>
+  </div>`;
 }
 function modCard(m){
   const st = stats(m), last = P.tests.filter(t => t.m===m.id && t.mode==='mix').slice(-1)[0], nd = dueQs(m).length;
@@ -1465,6 +1503,7 @@ const A = {
   backup: () => { P.lastBackup = Date.now(); save(); if (S.view === 'home') render(); return shareJson(P, 'kopfsache-backup-' + fmtDay(new Date()) + '.json', 'Kopfsache Backup'); },
   backupLater: () => { P.backupSnooze = Date.now() + 3 * DAY; save(); render(); },
   qEdit: d => openEditor(d.m, d.q),
+  examEdit: d => openExamEditor(d.mid),
   edUndo: d => { delete P.edits[d.k]; save(); S.modules = applyEdits(S.raw); toast('<span class="c">↩️</span> Original wiederhergestellt'); render(); },
   edExport: () => {
     const list = Object.entries(P.edits).map(([k, e]) => { const [mid, qid] = k.split('::'); return { modul: mid, frage: qid, geloescht: !!e.del, neu: e.q || null, original: rawQ(mid, qid) }; });
@@ -2252,11 +2291,6 @@ Object.assign(A, {
 });
 
 app.addEventListener('change', e => {
-  if (e.target.classList.contains('examdate')){
-    const mid = e.target.dataset.mid, v = e.target.value;
-    if (v) P.exams[mid] = v; else delete P.exams[mid];
-    save(); render(); return;
-  }
   if (e.target.id !== 'restore' || !e.target.files[0]) return;
   const fr = new FileReader();
   fr.onload = () => {
@@ -2267,7 +2301,6 @@ app.addEventListener('change', e => {
   fr.readAsText(e.target.files[0]);
 });
 app.addEventListener('click', e => {
-  if (e.target.closest('.calw')) return;   // Kalender: öffnet nur die Datumsauswahl
   const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
   const f = A[el.dataset.act]; if (f) f(el.dataset);
 });
