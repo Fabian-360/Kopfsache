@@ -1,5 +1,5 @@
 // Kopfsache – Offline-Speicher
-const V = 'kopfsache-v22';
+const V = 'kopfsache-v23';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'touch-icon-2.png', 'app-icon-192-2.png', 'app-icon-512-2.png', 'content.json'];
 
 self.addEventListener('install', e => {

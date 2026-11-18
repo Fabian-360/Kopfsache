@@ -327,6 +327,20 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 .kcard small{color:var(--muted);font-weight:700;font-size:13px}
 .gamebar{width:100%;display:flex;align-items:center;gap:16px;text-align:left;padding:20px 22px;margin-bottom:22px;border-radius:var(--r);background:linear-gradient(120deg,#E10600,#7A0000);color:#fff;box-shadow:0 14px 40px rgba(225,6,0,.3);transition:transform .15s}
 .gamebar:active{transform:scale(.98)}
+.homehead{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 132px;gap:20px;margin:6px 0 30px;align-items:stretch}
+.hcard{background:var(--card);border-radius:var(--r);padding:30px 26px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hcard::before{content:"";position:absolute;inset:0 0 auto 0;height:12px;background:var(--acc)}
+.hcard .h-title{margin:4px 0 12px}.hcard .semchips{margin:0 0 12px}.hcard .h-sub{margin:0}
+.gamecard{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:24px;border-radius:var(--r);background:linear-gradient(135deg,#E10600,#7A0000);color:#fff;box-shadow:0 14px 40px rgba(225,6,0,.3);transition:transform .15s}
+.gamecard:active,.htile:active{transform:scale(.97)}
+.gamecard .gi{font-size:46px;line-height:1;margin-bottom:6px}
+.gamecard b{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:28px;font-weight:800;line-height:1.1}
+.gamecard small{font-size:15px;font-weight:700;opacity:.85}
+.gamecard .gc{margin-top:auto;background:rgba(0,0,0,.35);padding:9px 15px;border-radius:999px;font-weight:800;font-size:17px;color:var(--gold)}
+.htiles{display:flex;flex-direction:column;gap:12px}
+.htile{flex:1;min-height:58px;background:var(--card);border:2px solid var(--line);border-radius:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--ink);transition:transform .15s}
+.htile b{font-size:19px;font-weight:800}.htile small{font-size:12px;color:var(--muted);font-weight:700}
+@media (max-width:700px){.homehead{grid-template-columns:1fr}.htiles{flex-direction:row}.gamecard .gc{margin-top:10px}}
 .gamebar .gi{font-size:40px}
 .gamebar .gt{flex:1;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:26px;font-weight:800;line-height:1.1}
 .gamebar .gt small{display:block;font-family:Nunito,system-ui,sans-serif;font-size:15px;font-weight:700;opacity:.8}
@@ -359,7 +373,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '22';
+const APP_VERSION = '23';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -926,12 +940,20 @@ function vHome(){
   }).join('') + '</div>';
   const chips = list.length > 1 || (list[0] && list[0].term) ? `<div class="semchips">${list.map(x => `<button class="semchip ${x.n === sem ? 'on' : ''}" data-act="sem" data-n="${x.n}">${esc(x.label)}${x.term ? `<small>${esc(x.term)}</small>` : ''}${x.n < newest ? '<small>📦 Archiv</small>' : ''}</button>`).join('')}</div>` : '';
   return `<div class="wrap wide fade">
-    <div class="top">${backBtn('welcome','Start')}<span class="spacer"></span><span class="pill">🔥 ${streak()}</span><button class="pill" data-act="settings" aria-label="Einstellungen">⚙️</button></div>
+    <div class="homehead">
+      <div class="hcard">
+        <h1 class="h-title">Deine Module</h1>
+        ${chips}
+        ${sem < newest ? `<div class="note" style="margin:10px 0 0">📦 Archiv: Das ist ein früheres Semester. Dein aktuelles ist das ${esc((list.find(x => x.n === newest)||{}).label || '')}.</div>` : `<p class="h-sub">Such dir aus, was du heute lernen willst.</p>`}
+      </div>
+      <button class="gamecard" data-act="game"><span class="gi">🏰</span><b>Study Defense</b><small>Wissen ist die einzige Währung</small><span class="gc">Rekord: Welle ${bestWaveAll()}</span></button>
+      <div class="htiles">
+        <button class="htile" data-act="welcome"><b>‹ Start</b></button>
+        <div class="htile"><b>🔥 ${streak()}</b><small>${streak() === 1 ? 'Tag' : 'Tage'} in Folge</small></div>
+        <button class="htile" data-act="settings" aria-label="Einstellungen"><b>⚙️</b><small>Einstellungen</small></button>
+      </div>
+    </div>
     ${noteHtml()}
-    <h1 class="h-title">Deine Module</h1>
-    ${chips}
-    ${sem < newest ? `<div class="note">📦 Archiv: Das ist ein früheres Semester. Dein aktuelles ist das ${esc((list.find(x => x.n === newest)||{}).label || '')}.</div>` : `<p class="h-sub">Such dir aus, was du heute lernen willst.</p>`}
-    <button class="gamebar" data-act="game"><span class="gi">🏰</span><span class="gt">Study Defense<small>Wissen ist die einzige Währung</small></span><span class="gc">Rekord: Welle ${bestWaveAll()}</span></button>
     ${mods.length ? grouped : `<div class="empty"><b>Noch keine Module in diesem Semester</b>Schick Claude deinen Stoff – er erscheint dann beim nächsten Öffnen mit Internet hier.</div>`}
   </div>`;
 }
