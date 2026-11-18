@@ -265,6 +265,9 @@ body.edopen{overflow:hidden}
 .gb{background:var(--card2);border-radius:16px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid transparent}
 .gb span{font-size:28px} .gb b{font-size:13px} .gb small{font-weight:800;color:var(--gold);font-size:13px}
 .gb.off{opacity:.4}
+html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
+#rscroll{position:fixed;right:3px;top:0;width:5px;border-radius:3px;background:var(--acc);z-index:80;opacity:0;transition:opacity .4s;pointer-events:none}
+#rscroll.on{opacity:1;transition:opacity .1s}
 .gmenu{display:flex;flex-direction:column;gap:10px;max-width:420px;margin:0 auto}
 .gmenu .btn{width:100%;justify-content:center}
 .savecard{border:2px solid var(--gold)}
@@ -336,7 +339,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 .hright{display:grid;grid-template-columns:minmax(0,1fr) 132px;gap:22px;grid-column:2/-1}
 .hcard{background:linear-gradient(135deg,#E10600,#A30000);color:#fff;border-radius:var(--r);padding:18px 24px;box-shadow:0 14px 40px rgba(225,6,0,.3);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
 .hcard .h-title{margin:0 0 12px}.hcard .semchips{margin:0 0 12px}.hcard .h-sub{margin:0;color:rgba(255,255,255,.85)}
-.hcard .semchip{background:rgba(0,0,0,.35);border-color:rgba(0,0,0,.2);color:#fff}.hcard .semchip.on{background:rgba(0,0,0,.45);border-color:#fff}.hcard .semchip small{color:rgba(255,255,255,.75)}
+.hcard .semchip{background:transparent;box-shadow:none;border-color:rgba(255,255,255,.45);color:#fff}.hcard .semchip.on{background:transparent;border-color:#fff}.hcard .semchip small{color:rgba(255,255,255,.75)}
 .gamecard{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:24px;border-radius:var(--r);background:linear-gradient(135deg,#E10600,#7A0000);color:#fff;box-shadow:0 14px 40px rgba(225,6,0,.3);transition:transform .15s}
 .gamecard:active,.htile:active{transform:scale(.97)}
 .gamecard .gi{font-size:46px;line-height:1;margin-bottom:6px}
@@ -346,7 +349,6 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 .htiles{display:flex;flex-direction:column;gap:12px}
 .htile{flex:1;min-height:58px;background:linear-gradient(135deg,#E10600,#A30000);border-radius:18px;box-shadow:0 8px 24px rgba(225,6,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#fff;transition:transform .15s}
 .htile b{font-size:19px;font-weight:800;display:flex;align-items:center;gap:6px}.htile small{font-size:12px;color:rgba(255,255,255,.85);font-weight:700}
-.flame{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:#000;font-size:16px}
 @media (max-width:640px){.homehead{grid-template-columns:1fr}.hright{grid-column:auto;grid-template-columns:1fr}.htiles{flex-direction:row}.gamecard .gc{margin-top:10px}}
 .gamebar .gi{font-size:40px}
 .gamebar .gt{flex:1;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:26px;font-weight:800;line-height:1.1}
@@ -380,7 +382,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '25';
+const APP_VERSION = '26';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -956,8 +958,8 @@ function vHome(){
       <div class="hright">
       <button class="gamecard" data-act="game"><span class="gi">🏰</span><b>Study Defense</b><small>Wissen ist die einzige Währung</small><span class="gc">Rekord: Welle ${bestWaveAll()}</span></button>
       <div class="htiles">
-        <button class="htile" data-act="welcome"><b>‹ Start</b></button>
-        <div class="htile"><b><span class="flame">🔥</span> ${streak()}</b><small>${streak() === 1 ? 'Tag' : 'Tage'} in Folge</small></div>
+        <button class="htile" data-act="welcome"><b>Start</b></button>
+        <div class="htile"><b>🔥</b><small>Tage in Folge: ${streak()}</small></div>
         <button class="htile" data-act="settings" aria-label="Einstellungen"><b>⚙️</b><small>Einstellungen</small></button>
       </div>
       </div>
@@ -1306,6 +1308,17 @@ function fitHomeHead(){
   if (h >= nat) hc.style.height = h + 'px'; else hc.style.alignSelf = '';
 }
 addEventListener('resize', () => requestAnimationFrame(fitHomeHead));
+// Rote Scroll-Anzeige rechts (statt der grauen)
+(() => {
+  const bar = document.createElement('div'); bar.id = 'rscroll'; document.body.appendChild(bar); let tm = 0;
+  addEventListener('scroll', () => {
+    const doc = document.documentElement, total = doc.scrollHeight, vh = innerHeight;
+    if (total <= vh + 2){ bar.classList.remove('on'); return; }
+    const pad = 6, h = Math.max(40, (vh - 2*pad) * vh / total), top = pad + (vh - 2*pad - h) * (scrollY / (total - vh));
+    bar.style.height = h + 'px'; bar.style.transform = 'translateY(' + Math.max(pad, Math.min(vh - pad - h, top)) + 'px)';
+    bar.classList.add('on'); clearTimeout(tm); tm = setTimeout(() => bar.classList.remove('on'), 700);
+  }, { passive:true });
+})();
 function go(view){ S.view = view; S.confirmQuit = false; render(); window.scrollTo(0,0); }
 
 /* ---------- actions ---------- */
