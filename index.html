@@ -88,7 +88,6 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 
 /* Module */
 .hero{background:var(--acc);color:#fff;border-radius:30px;padding:30px;display:flex;gap:20px;align-items:center;margin-bottom:22px;position:relative;overflow:hidden}
-.hero::after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.12);right:-70px;top:-90px}
 .hero .memo{background:rgba(255,255,255,.2);width:72px;height:72px;font-size:40px;border-radius:22px;flex:none}
 .hero h1{font-size:36px;font-weight:800;line-height:1.05}
 .hero p{margin:6px 0 0;opacity:.85;font-weight:600}
@@ -310,6 +309,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 .wl .q{word-break:break-word}
 .setcard{background:var(--card);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);margin-bottom:16px}
 .setcard h3{font-size:22px;margin-bottom:6px}
+.mapcard{margin-top:16px;padding-top:16px}.mapcard h3{margin:0 0 12px}
 .setcard p{color:var(--muted);font-weight:600;margin:0 0 16px}
 .welcome{padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom))}
 .stacksec{background:var(--card);border-radius:var(--r);padding:22px 22px 18px;box-shadow:var(--shadow);margin-top:18px}
@@ -382,7 +382,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '26';
+const APP_VERSION = '27';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -2031,7 +2031,7 @@ function vGame(){
         <div><b>${st.games}</b><span>Spiele</span></div>
         <div><b>${st.right + st.wrong ? Math.round(st.right/(st.right+st.wrong)*100) : 0} %</b><span>richtig im Spiel</span></div>
       </div>
-      <div class="setcard"><h3>Karte wählen</h3><div class="maplist">${maps}</div></div>
+      <div class="setcard mapcard"><h3>Karte wählen</h3><div class="maplist">${maps}</div></div>
       ${(() => { const sv = P.game.saves[m.id]; if (!sv) return ''; const mp = MAPS[sv.map] || MAPS.wald, d = new Date(sv.t);
         const when = d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + ', ' + d.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
         return `<div class="setcard savecard"><h3>💾 Gespeicherte Runde</h3>
