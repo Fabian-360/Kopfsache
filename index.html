@@ -400,7 +400,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '31';
+const APP_VERSION = '32';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -493,7 +493,8 @@ function record(m,q,ok){
   const k = key(m,q), e = P.q[k] || {r:0,w:0};
   if (ok) e.r++; else e.w++;
   const box = ok ? Math.min(SR_DAYS.length - 1, (e.b != null ? e.b : (e.last === 'r' ? 1 : 0)) + 1) : 0;
-  e.b = box; e.due = Date.now() + SR_DAYS[box] * DAY;
+  // falsch → morgen wieder fällig (heute über „Fehler üben“ jederzeit möglich), richtig → nach 1, 3, 7, 16, 35 Tagen
+  e.b = box; e.due = ok ? Date.now() + SR_DAYS[box] * DAY : endOfToday() + 1;
   e.last = ok ? 'r' : 'w'; e.t = Date.now();
   P.q[k] = e;
   const d = fmtDay(new Date()); P.days[d] = (P.days[d]||0)+1;
@@ -1061,7 +1062,7 @@ function vModule(){
     <div class="top">${backBtn('home','Module')}<span class="spacer"></span>${coinPill()}</div>
     <div class="hero"><div class="memo">${esc(m.emoji||'📘')}</div><div><h1>${esc(m.title)}</h1>${m.subtitle?`<p>${esc(m.subtitle)}</p>`:''}</div></div>
     ${(() => { if (noQ) return ''; const nd = dueQs(m).length, nx = nextDueDay(m);
-      if (nd) return `<button class="duebar" data-act="test" data-mode="due"><span class="di">🔁</span><span class="dt">Heute fällig: ${nd} ${nd === 1 ? 'Frage' : 'Fragen'}<small>Wiederhole sie jetzt, bevor du sie vergisst</small></span><span class="dgo">Jetzt wiederholen</span></button>`;
+      if (nd) return `<button class="duebar" data-act="test" data-mode="due"><span class="di">🔁</span><span class="dt">Heute fällig: ${nd} ${nd === 1 ? 'Frage' : 'Fragen'}<small>Wiederhole sie jetzt, bevor du sie vergisst – Falsche kommen morgen wieder</small></span><span class="dgo">Jetzt wiederholen</span></button>`;
       return `<div class="duebar ok"><span class="di">✅</span><span class="dt">Nichts fällig<small>${nx ? 'Nächste Wiederholung ' + relDay(nx) : 'Beantworte Fragen, dann plant die App die Wiederholungen'}</small></span></div>`; })()}
     <div class="tiles${ex.length ? ' four' : ''}">
       <button class="tile" data-act="learn"><span class="ic">📖</span><h3>Lernen</h3><span>${read} von ${ls.length} Texten gelesen</span></button>
@@ -1520,6 +1521,7 @@ const GCFG = {
   startQuestions: 10,                        // Startfragen vor jeder Runde
   qTime: 60,                                 // Sekunden pro Frage
   lives: 20,
+  startCoins: 50,                            // kleines Startgeld, damit ein schlechter Start nicht sofort verloren ist
   firstQ: 6, everyQ: 16,                     // Fragen während einer Welle: nach 6 s, dann alle 16 s (Spielzeit)
 };
 const TOWERS = {
@@ -1710,7 +1712,7 @@ function gameCloseQuestion(){
 function banner(G, txt, sub, color){ G.banner = { txt, sub: sub || '', t: 2.2, color: color || '#FFFFFF' }; }
 function gameStart(m){
   MAP = prepMap(MAPS[curMapId()]);
-  S.play = { m, map: curMapId(), smult: MAP_MULT[MAP.diff] || 1, phase:'quiz', coins:0, earned:0, lives:GCFG.lives, wave:0, towers:[], enemies:[], shots:[], bolts:[], fx:[], parts:[], floats:[], born:[], queue:[], spawnT:0, waveT:0, nextQ:GCFG.firstQ,
+  S.play = { m, map: curMapId(), smult: MAP_MULT[MAP.diff] || 1, phase:'quiz', coins:GCFG.startCoins, earned:0, lives:GCFG.lives, wave:0, towers:[], enemies:[], shots:[], bolts:[], fx:[], parts:[], floats:[], born:[], queue:[], spawnT:0, waveT:0, nextQ:GCFG.firstQ,
              streak:0, errStreak:0, right:0, wrong:0, kills:0, score:0, speed:1, sel:null, used:new Set(), quizN:0, q:null, paused:true, over:false, last:0, shake:0, theme:null };
   S.play.unl = new Set(TOWER_ORDER.filter(k => towerUnlocked(k, null)));
   P.game.stats.games++; save();
@@ -2144,7 +2146,7 @@ function vGame(){
       <button class="btn big ${P.game.saves[m.id] ? '' : 'acc'}" style="width:100%;margin:18px 0" data-act="gStart">⚔️ ${P.game.saves[m.id] ? 'Neue Runde starten' : 'Runde starten'} · ${MAPS[cm].icon} ${MAPS[cm].name}</button>
       ${P.game.saves[m.id] ? '<p class="muted" style="margin:-10px 0 14px;text-align:center;font-weight:700">Eine neue Runde ersetzt den gespeicherten Spielstand.</p>' : ''}
       <div class="setcard"><h3>So funktioniert's</h3>
-        <p>• Zuerst <b>${GCFG.startQuestions} Startfragen</b> – damit verdienst du dein Startkapital.<br>
+        <p>• Du startest mit <b>${GCFG.startCoins} 🪙</b>, dazu kommen <b>${GCFG.startQuestions} Startfragen</b> für dein Startkapital.<br>
         • Münzen gibt es <b>nur für richtige Antworten</b>: Leicht ${GCFG.reward[1]} · Mittel ${GCFG.reward[2]} · Schwer ${GCFG.reward[3]}.<br>
         • Serie: 3 richtige in Folge = 2×, ab 5 = 3×, ab 8 = 4×, ab 10 = 5×.<br>
         • Mehrfach falsch beantwortete Fragen aus deinem roten Stapel bringen einmalig <b>+${GCFG.repeatBonus} Lernbonus</b>.<br>
