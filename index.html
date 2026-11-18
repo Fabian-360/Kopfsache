@@ -38,7 +38,7 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .note{background:rgba(225,6,0,.15);border-radius:14px;padding:10px 14px;font-size:15px;margin-bottom:16px}
 
 /* Welcome */
-.welcome{position:fixed;inset:0;touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;overflow:hidden}
+.welcome{position:fixed;inset:0;background:#000;touch-action:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;overflow:hidden}
 .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.35;z-index:0}
 .welcome>*:not(.blob){position:relative;z-index:1;flex-shrink:0}
 .logo{width:clamp(64px,12vh,110px);height:clamp(64px,12vh,110px);font-size:clamp(34px,6.5vh,56px) !important;border-radius:30%;background:var(--acc);display:grid;place-items:center;transform:rotate(-6deg);box-shadow:0 18px 50px rgba(225,6,0,.45);margin-bottom:clamp(14px,3vh,28px);animation:bob 4s ease-in-out infinite}
@@ -64,9 +64,12 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .h-title{font-size:40px;font-weight:800;margin:6px 0 4px}
 .h-sub{color:var(--muted);margin:0 0 26px;font-weight:600}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
+.subjgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 18px;grid-auto-flow:row dense;align-items:start}
+.subjgrp.wide{grid-column:1/-1}
+.subjgrp .grid{height:100%}
 .mcard{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);text-align:left;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;transition:transform .15s}
 .mcard:active{transform:scale(.98)}
-.mcard::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:var(--acc)}
+.mcard::before{content:"";position:absolute;inset:0 0 auto 0;height:12px;background:var(--acc)}
 .memo{width:56px;height:56px;border-radius:18px;background:var(--accsoft);display:grid;place-items:center;font-size:30px}
 .mcard h2{font-size:24px;font-weight:700}
 .mcard p{margin:0;color:var(--muted);font-size:15px;line-height:1.4}
@@ -215,13 +218,13 @@ body.edopen{overflow:hidden}
 .semchip small{display:block;font-size:12px;color:var(--muted);font-weight:700}
 .semchip.on{border-color:var(--acc);background:#2A1212}
 .subj{font-size:20px;margin:22px 0 12px;color:var(--ink)}
-.gwrap{max-width:1100px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 12px calc(20px + env(safe-area-inset-bottom))}
+.gwrap{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;box-sizing:border-box;max-width:1100px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 12px calc(20px + env(safe-area-inset-bottom))}
 .gtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .ghud{flex:1;display:flex;gap:8px;flex-wrap:wrap}
 .gh{background:var(--card);border-radius:999px;padding:7px 12px;font-weight:800;font-size:15px;box-shadow:var(--shadow)}
 .gh b{color:var(--gold)} .gh.hot{color:var(--gold);outline:2px solid var(--gold)}
 .gsp{min-width:52px;justify-content:center;color:var(--ink)}
-.gcanvas{position:relative;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);touch-action:manipulation;max-width:calc((100vh - 140px) * 1.5625);max-width:calc((100dvh - 140px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 1.5625);margin:0 auto}
+.gcanvas{width:100%;margin-top:auto!important;margin-bottom:auto!important;position:relative;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);touch-action:manipulation;max-width:calc((100vh - 140px) * 1.5625);max-width:calc((100dvh - 140px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 1.5625);margin:0 auto}
 .gcanvas canvas{width:100%;height:auto;display:block}
 .gbar{display:flex;align-items:center;gap:12px;margin-top:12px}
 .ghint{color:var(--muted);font-weight:700;font-size:14px;text-align:center;margin-top:10px}
@@ -250,6 +253,9 @@ body.edopen{overflow:hidden}
 .gb{background:var(--card2);border-radius:16px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid transparent}
 .gb span{font-size:28px} .gb b{font-size:13px} .gb small{font-weight:800;color:var(--gold);font-size:13px}
 .gb.off{opacity:.4}
+.gmenu{display:flex;flex-direction:column;gap:10px;max-width:420px;margin:0 auto}
+.gmenu .btn{width:100%;justify-content:center}
+.savecard{border:2px solid var(--gold)}
 .gmodal{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top)) 14px 40px}
 .gcard{width:100%;max-width:760px;background:var(--bg);border-radius:26px;padding:16px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
 .gcard .qcard{margin-bottom:0;box-shadow:none}
@@ -414,7 +420,7 @@ function applyEdits(mods){
   });
 }
 function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, edits: p.edits && typeof p.edits==='object' ? p.edits : {}, coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0, game: normGame(p.game) }; }
-function normGame(g){ g = g && typeof g==='object' ? g : {}; const st = g.stats||{}; return { best:g.best||{}, bonus:g.bonus||{}, map: g.map||'wald', sound: g.sound !== false, stats:{ games:+st.games||0, waves:+st.waves||0, right:+st.right||0, wrong:+st.wrong||0, kills:+st.kills||0, bestStreak:+st.bestStreak||0 } }; }
+function normGame(g){ g = g && typeof g==='object' ? g : {}; const st = g.stats||{}; return { best:g.best||{}, bonus:g.bonus||{}, saves: g.saves && typeof g.saves==='object' ? g.saves : {}, map: g.map||'wald', sound: g.sound !== false, stats:{ games:+st.games||0, waves:+st.waves||0, right:+st.right||0, wrong:+st.wrong||0, kills:+st.kills||0, bestStreak:+st.bestStreak||0 } }; }
 
 const mod = () => S.modules.find(m => m.id===S.modId);
 const key = (m,q) => m.id+'::'+q.id;
@@ -808,6 +814,7 @@ function mergeP(a, b){
   const ga = out.game, gb = b.game;
   for (const k in gb.best){ const x = ga.best[k], y = gb.best[k]; if (!x || (y.wave||0) > (x.wave||0) || ((y.wave||0) === (x.wave||0) && (y.score||0) > (x.score||0))) ga.best[k] = y; }
   Object.assign(ga.bonus, gb.bonus);
+  for (const k in gb.saves){ if (!ga.saves[k] || (gb.saves[k].t||0) > (ga.saves[k].t||0)) ga.saves[k] = gb.saves[k]; }
   for (const k in gb.stats) ga.stats[k] = Math.max(ga.stats[k]||0, gb.stats[k]||0);
   return out;
 }
@@ -859,9 +866,6 @@ function vWelcome(){
   const greet = h<5 ? 'Noch wach' : h<11 ? 'Guten Morgen' : h<17 ? 'Hallo' : 'Guten Abend';
   const total = Object.keys(P.q).length;
   return `<div class="welcome">
-    <div class="blob" style="width:380px;height:380px;background:#E10600;left:-120px;top:-80px"></div>
-    <div class="blob" style="width:300px;height:300px;background:#7A0000;right:-90px;bottom:-60px"></div>
-    <div class="blob" style="width:160px;height:160px;background:#FF3B30;right:12%;top:12%"></div>
     <div class="logo">🧠</div>
     <p class="hello">${greet}, ${NAME}!</p>
     <h1>Kopfsache</h1>
@@ -870,7 +874,7 @@ function vWelcome(){
       <div class="chip"><b>${today}</b><span>Antworten heute</span></div>
       <div class="chip"><b>🏰 ${bestWaveAll()}</b><span>Beste Welle</span></div>
     </div>
-    <button class="btn big" data-act="home">Los geht's →</button>
+    <button class="btn big" data-act="home">Los geht's</button>
   </div>`;
 }
 
@@ -903,10 +907,11 @@ function vHome(){
   const sem = curSem(), list = semList(), newest = list.length ? list[list.length-1].n : 1;
   const mods = S.modules.filter(m => modSem(m) === sem);
   const subjects = [...new Set(mods.map(m => m.subject || ''))];
-  const grouped = subjects.map(sub => {
+  // Fächer mit mehreren Modulen bekommen eine ganze Zeile, Fächer mit einem Modul stehen nebeneinander
+  const grouped = '<div class="subjgrid">' + subjects.map(sub => {
     const ms = mods.filter(m => (m.subject || '') === sub);
-    return (subjects.length > 1 || sub ? `<h3 class="subj">${esc(sub || 'Weitere Module')}</h3>` : '') + `<div class="grid">${ms.map(modCard).join('')}</div>`;
-  }).join('');
+    return `<section class="subjgrp ${ms.length > 1 ? 'wide' : ''}">` + (subjects.length > 1 || sub ? `<h3 class="subj">${esc(sub || 'Weitere Module')}</h3>` : '') + `<div class="grid">${ms.map(modCard).join('')}</div></section>`;
+  }).join('') + '</div>';
   const chips = list.length > 1 || (list[0] && list[0].term) ? `<div class="semchips">${list.map(x => `<button class="semchip ${x.n === sem ? 'on' : ''}" data-act="sem" data-n="${x.n}">${esc(x.label)}${x.term ? `<small>${esc(x.term)}</small>` : ''}${x.n < newest ? '<small>📦 Archiv</small>' : ''}</button>`).join('')}</div>` : '';
   return `<div class="wrap fade">
     <div class="top">${backBtn('welcome','Start')}<span class="spacer"></span><span class="pill">🔥 ${streak()}</span><button class="pill" data-act="settings" aria-label="Einstellungen">⚙️</button></div>
@@ -1526,7 +1531,8 @@ function gameCloseQuestion(){
   if (G.phase === 'quiz'){
     G.quizN++;
     if (G.quizN >= GCFG.startQuestions){ G.phase = 'build'; G.paused = false; banner(G, '🏗️ Bauphase', 'Tippe auf ein + um Türme zu bauen'); }
-    else { gameAsk(G, 'quiz'); return; }
+    gameSave(G);
+    if (G.phase === 'quiz'){ gameAsk(G, 'quiz'); return; }
   }
   renderGameUI();
 }
@@ -1569,10 +1575,32 @@ function gameWaveDone(G){
     const t = TOWERS[fresh[0]];
     banner(G, `${t.icon} ${t.name} freigeschaltet!`, 'Ab jetzt in der Bauphase verfügbar', '#FFC83D');
   } else banner(G, `✅ Welle ${G.wave} geschafft`, '+' + Math.round(50 * G.wave * G.smult) + ' Punkte', '#2FBF71');
+  gameSave(G);
   renderGameUI();
+}
+/* ---------- Spielstand: wird in jeder Bauphase und nach jeder Startfrage automatisch gesichert ---------- */
+function gameSave(G){
+  if (!G || G.over || (G.phase !== 'build' && G.phase !== 'quiz')) return;
+  P.game.saves[G.m.id] = { t: Date.now(), map: G.map, phase: G.phase, quizN: G.quizN, wave: G.wave, coins: G.coins, earned: G.earned, lives: G.lives,
+    towers: G.towers.map(t => ({ type: t.type, slot: t.slot, level: t.level, spent: t.spent })), extra: G.queue.filter(x => x.extra).map(x => x.t),
+    streak: G.streak, errStreak: G.errStreak, right: G.right, wrong: G.wrong, kills: G.kills, score: G.score, unl: [...G.unl] };
+  save();
+}
+function gameResume(m){
+  const sv = P.game.saves[m.id]; if (!sv) return;
+  MAP = prepMap(MAPS[sv.map] || MAPS.wald);
+  const G = S.play = { m, map: MAPS[sv.map] ? sv.map : 'wald', smult: MAP_MULT[MAP.diff] || 1, phase: sv.phase === 'quiz' ? 'quiz' : 'build', coins: sv.coins||0, earned: sv.earned||0, lives: sv.lives||GCFG.lives, wave: sv.wave||0,
+    towers: (sv.towers||[]).filter(t => TOWERS[t.type] && MAP.slots[t.slot]).map(t => ({ type: t.type, slot: t.slot, pos: MAP.slots[t.slot], level: t.level||1, cd: 0, spent: t.spent||TOWERS[t.type].cost, fireT: 0 })),
+    enemies:[], shots:[], bolts:[], fx:[], parts:[], floats:[], born:[], queue: (sv.extra||[]).filter(t => ENEMY[t]).map(t => ({ t, extra:true })), spawnT:0, waveT:0, nextQ:GCFG.firstQ,
+    streak: sv.streak||0, errStreak: sv.errStreak||0, right: sv.right||0, wrong: sv.wrong||0, kills: sv.kills||0, score: sv.score||0, speed:1, sel:null, used:new Set(), quizN: sv.quizN||0, q:null, paused: false, over:false, last:0, shake:0, theme:null,
+    unl: new Set(sv.unl || TOWER_ORDER.filter(k => towerUnlocked(k, null))) };
+  S.view = 'play'; render(); window.scrollTo(0,0);
+  if (G.phase === 'quiz') gameAsk(G, 'quiz');
+  else { banner(G, '💾 Spielstand geladen', `Weiter mit Welle ${G.wave + 1}`, '#FFC83D'); renderGameUI(); }
 }
 function gameOver(){
   const G = S.play;
+  delete P.game.saves[G.m.id];
   const waves = survivedNow(G);
   G.over = true; G.phase = 'over'; G.paused = true; G.survived = waves;
   const k = G.m.id, cur = P.game.best[k] || { wave:0, score:0 };
@@ -1589,6 +1617,7 @@ function gameLoop(ts){
   if (!G || S.view !== 'play'){ gameRaf = 0; return; }
   const dtReal = Math.min(0.05, (ts - (G.last || ts)) / 1000); G.last = ts;
   // Fragen-Timer läuft in Echtzeit, Spiel steht währenddessen
+  if (G.menu){ if (G.q && G.q.ok === undefined) G.q.start += dtReal * 1000; drawGame(G, ts); gameRaf = requestAnimationFrame(gameLoop); return; }
   if (G.q && G.q.ok === undefined){
     const left = GCFG.qTime - (ts - G.q.start) / 1000;
     const bar = document.getElementById('qtimer'), lbl = document.getElementById('qtimerl');
@@ -1938,7 +1967,13 @@ function vGame(){
         <div><b>${st.right + st.wrong ? Math.round(st.right/(st.right+st.wrong)*100) : 0} %</b><span>richtig im Spiel</span></div>
       </div>
       <div class="setcard"><h3>Karte wählen</h3><div class="maplist">${maps}</div></div>
-      <button class="btn big acc" style="width:100%;margin:18px 0" data-act="gStart">⚔️ Runde starten · ${MAPS[cm].icon} ${MAPS[cm].name}</button>
+      ${(() => { const sv = P.game.saves[m.id]; if (!sv) return ''; const mp = MAPS[sv.map] || MAPS.wald, d = new Date(sv.t);
+        const when = d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + ', ' + d.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+        return `<div class="setcard savecard"><h3>💾 Gespeicherte Runde</h3>
+          <p>${mp.icon} ${mp.name} · ${sv.phase === 'quiz' ? `Startfragen ${sv.quizN}/${GCFG.startQuestions}` : `${sv.wave} Wellen geschafft`} · 🪙 ${sv.coins} · ❤️ ${sv.lives} · ${(sv.towers||[]).length} Türme · ⭐ ${sv.score}<br><small>gespeichert am ${when}</small></p>
+          <div class="btnrow"><button class="btn acc big" data-act="gLoad">▶️ Weiterspielen</button><button class="btn ghost" data-act="gDrop">${S.dropConfirm ? 'Wirklich verwerfen?' : 'Verwerfen'}</button></div></div>`; })()}
+      <button class="btn big ${P.game.saves[m.id] ? '' : 'acc'}" style="width:100%;margin:18px 0" data-act="gStart">⚔️ ${P.game.saves[m.id] ? 'Neue Runde starten' : 'Runde starten'} · ${MAPS[cm].icon} ${MAPS[cm].name}</button>
+      ${P.game.saves[m.id] ? '<p class="muted" style="margin:-10px 0 14px;text-align:center;font-weight:700">Eine neue Runde ersetzt den gespeicherten Spielstand.</p>' : ''}
       <div class="setcard"><h3>So funktioniert's</h3>
         <p>• Zuerst <b>${GCFG.startQuestions} Startfragen</b> – damit verdienst du dein Startkapital.<br>
         • Münzen gibt es <b>nur für richtige Antworten</b>: Leicht ${GCFG.reward[1]} · Mittel ${GCFG.reward[2]} · Schwer ${GCFG.reward[3]}.<br>
@@ -1949,6 +1984,7 @@ function vGame(){
         • Neue Türme schalten sich <b>schon während der Runde</b> frei, sobald du die Welle erreichst.<br>
         • Ab Welle 2 kommen <b>Geister 👻</b>: Türme treffen sie nicht. Tippe sie an – richtige Antwort = Geist besiegt, falsche = noch ein Geist.<br>
         • Alle 4 Wellen eine Spezialwelle, alle 5 Wellen ein Boss.<br>
+        • Dein Spielstand wird in jeder Bauphase automatisch gespeichert. Über ✕ kannst du pausieren oder speichern & beenden.<br>
         • Alle Antworten zählen auch für dein Übungsheft und deine Kartenstapel.</p></div>
       <div class="setcard"><h3>Türme</h3><div class="twlist">${towers}</div></div>
       <div class="setcard"><h3>Gegner</h3><div class="twlist">${enemies}</div></div>
@@ -1958,7 +1994,7 @@ function vGame(){
     <div class="top">${backBtn('home','Module')}</div>
     <h1 class="h-title">🏰 Study Defense</h1>
     <p class="h-sub">Welches Modul willst du spielen?</p>
-    ${(() => { const sem = curSem(), row = x => { const b = P.game.best[x.id]; return `<button class="row" data-act="gamePick" data-id="${esc(x.id)}"><span class="num">${esc(x.emoji||'📘')}</span><span class="t">${esc(x.title)}<small>${(x.questions||[]).length} Fragen · Rekord: Welle ${b ? b.wave : 0}</small></span><span>›</span></button>`; };
+    ${(() => { const sem = curSem(), row = x => { const b = P.game.best[x.id]; return `<button class="row" data-act="gamePick" data-id="${esc(x.id)}"><span class="num">${esc(x.emoji||'📘')}</span><span class="t">${esc(x.title)}<small>${(x.questions||[]).length} Fragen · Rekord: Welle ${b ? b.wave : 0}${P.game.saves[x.id] ? ' · 💾 Spielstand' : ''}</small></span><span>›</span></button>`; };
       const now = S.modules.filter(x => modSem(x) === sem), other = S.modules.filter(x => modSem(x) !== sem);
       if (!S.modules.length) return `<div class="empty"><b>Noch keine Module da</b></div>`;
       return `<div class="list">${now.map(row).join('')}</div>` + (other.length ? `<h3 class="subj">Andere Semester</h3><div class="list">${other.map(row).join('')}</div>` : ''); })()}
@@ -1976,8 +2012,20 @@ function renderGameUI(){
   updateHud();
   const sp = document.getElementById('gspeed'); if (sp) sp.textContent = G.speed + '×';
   const wb = document.getElementById('gwave');
-  if (wb) wb.innerHTML = G.phase === 'build' && !G.q ? `<button class="btn acc gwbtn" data-act="gWave">🌊 Welle ${G.wave+1} starten</button>` : '';
+  if (wb) wb.innerHTML = G.phase === 'build' && !G.q && !G.menu ? `<button class="btn acc gwbtn" data-act="gWave">🌊 Welle ${G.wave+1} starten</button>` : '';
   let h = '';
+  if (G.menu){
+    const info = G.phase === 'wave' ? `Gespeichert ist dein Stand <b>vor Welle ${G.wave}</b> – diese Welle startest du beim Weiterspielen neu.`
+      : G.phase === 'quiz' ? `Startfrage ${G.quizN + 1}/${GCFG.startQuestions} – dein bisheriges Startkapital (${G.coins} 🪙) wird gespeichert.`
+      : `Dein Stand nach Welle ${G.wave} wird gespeichert (${G.coins} 🪙 · ❤️ ${G.lives} · ${G.towers.length} Türme).`;
+    el.innerHTML = `<div class="gmodal"><div class="gcard center">
+      <div style="font-size:52px">⏸️</div><h2>Pause</h2><p class="muted" style="margin:6px 0 18px">${info}</p>
+      <div class="gmenu"><button class="btn acc big" data-act="gMenuBack">▶️ Weiterspielen</button>
+      <button class="btn big" data-act="gSaveQuit">💾 Speichern & beenden</button>
+      <button class="btn ghost" data-act="gGiveUp">🏳️ Aufgeben – Runde jetzt werten</button></div>
+    </div></div>`;
+    return;
+  }
   if (G.phase === 'over'){
     const waves = G.survived || 0;
     h = `<div class="gmodal"><div class="gcard center">
@@ -2024,7 +2072,7 @@ function renderGameUI(){
   el.innerHTML = h;
 }
 function gameTap(ev){
-  const G = S.play; if (!G || G.q) return;
+  const G = S.play; if (!G || G.q || G.menu) return;
   const cv = ev.currentTarget, r = cv.getBoundingClientRect();
   const x = (ev.clientX - r.left) / r.width * GW, y = (ev.clientY - r.top) / r.height * GH;
   if (G.phase === 'wave' && !G.paused){
@@ -2040,9 +2088,14 @@ function gameTap(ev){
 }
 
 Object.assign(A, {
-  gStart: () => { const m = S.play ? S.play.m : S.modules.find(x => x.id === S.gameMod); if (m){ gameStart(m); } },
+  gStart: () => { const m = S.play ? S.play.m : S.modules.find(x => x.id === S.gameMod); if (m){ S.dropConfirm = false; gameStart(m); } },
   gExit: () => { S.play = null; go('game'); },
-  gQuit: () => { const G = S.play; if (G && !G.over){ G.lives = 0; gameOver(); } else { S.play = null; go('game'); } },
+  gQuit: () => { const G = S.play; if (G && !G.over){ G.menu = true; G.sel = null; renderGameUI(); } else { S.play = null; go('game'); } },
+  gMenuBack: () => { const G = S.play; if (G){ G.menu = false; renderGameUI(); } },
+  gSaveQuit: () => { const G = S.play; if (!G) return; G.menu = false; gameSave(G); S.play = null; go('game'); toast('<span class="c">💾</span> Spielstand gespeichert'); },
+  gGiveUp: () => { const G = S.play; if (!G) return; G.menu = false; G.lives = 0; gameOver(); },
+  gLoad: () => { const m = S.modules.find(x => x.id === S.gameMod); if (m) gameResume(m); },
+  gDrop: () => { if (!S.dropConfirm){ S.dropConfirm = true; render(); return; } S.dropConfirm = false; delete P.game.saves[S.gameMod]; save(); render(); },
   gSpeed: () => { const G = S.play; if (G){ G.speed = G.speed >= 3 ? 1 : G.speed + 1; renderGameUI(); } },
   gMap: d => { if (MAPS[d.k]){ P.game.map = d.k; save(); render(); } },
   gWave: () => gameStartWave(),
@@ -2050,10 +2103,10 @@ Object.assign(A, {
   gBuy: d => { const G = S.play, b = TOWERS[d.k]; if (!G || G.sel === null || G.coins < b.cost || !towerUnlocked(d.k, G)) return;
     const pos = MAP.slots[G.sel];
     G.coins -= b.cost; G.towers.push({ type:d.k, slot:G.sel, pos, level:1, cd:0, spent:b.cost, fireT:0.14 });
-    G.fx.push({ k:'ring', x:pos[0], y:pos[1], r:46, t:0.5, color:b.color }); burst(G, pos[0], pos[1], b.color, 12, 120); renderGameUI(); },
+    G.fx.push({ k:'ring', x:pos[0], y:pos[1], r:46, t:0.5, color:b.color }); burst(G, pos[0], pos[1], b.color, 12, 120); gameSave(G); renderGameUI(); },
   gUp: () => { const G = S.play, t = G && G.towers.find(t => t.slot === G.sel); if (!t || t.level >= 3) return; const c = upCost(t); if (G.coins < c) return;
-    G.coins -= c; t.spent += c; t.level++; G.fx.push({ k:'ring', x:t.pos[0], y:t.pos[1], r:52, t:0.5, color:'#FFC83D' }); burst(G, t.pos[0], t.pos[1], '#FFC83D', 14, 140); renderGameUI(); },
-  gSell: () => { const G = S.play, t = G && G.towers.find(t => t.slot === G.sel); if (!t) return; G.coins += Math.round(t.spent*0.5); G.towers = G.towers.filter(x => x !== t); burst(G, t.pos[0], t.pos[1], '#9AA0A6', 10, 100); renderGameUI(); },
+    G.coins -= c; t.spent += c; t.level++; G.fx.push({ k:'ring', x:t.pos[0], y:t.pos[1], r:52, t:0.5, color:'#FFC83D' }); burst(G, t.pos[0], t.pos[1], '#FFC83D', 14, 140); gameSave(G); renderGameUI(); },
+  gSell: () => { const G = S.play, t = G && G.towers.find(t => t.slot === G.sel); if (!t) return; G.coins += Math.round(t.spent*0.5); G.towers = G.towers.filter(x => x !== t); burst(G, t.pos[0], t.pos[1], '#9AA0A6', 10, 100); gameSave(G); renderGameUI(); },
   gAns: d => { const G = S.play; if (G && G.q) pickAnswer(G.q, +d.j, G.m); },
   gCheck: () => { const G = S.play; if (G && G.q) finishAnswer(G.q, G.q.sel.slice(), G.m); },
   gNext: () => gameCloseQuestion(),
