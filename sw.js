@@ -1,6 +1,6 @@
 // Kopfsache – Offline-Speicher
-const V = 'kopfsache-v5';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'content.json'];
+const V = 'kopfsache-v6';
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'touch-icon-2.png', 'app-icon-192-2.png', 'app-icon-512-2.png', 'content.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
