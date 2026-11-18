@@ -87,6 +87,12 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .tile{background:var(--card);border-radius:var(--r);padding:24px 22px;box-shadow:var(--shadow);text-align:left;display:flex;flex-direction:column;gap:6px;min-height:190px;transition:transform .15s}
 .tile:active{transform:scale(.97)}
 .tile .ic{font-size:38px;margin-bottom:auto}
+.tiles.four{grid-template-columns:repeat(2,1fr)}
+@media (max-width:640px){.tiles.four{grid-template-columns:1fr}}
+.tile.examtile{background:linear-gradient(135deg,#3A0E0C,var(--card) 70%);box-shadow:var(--shadow),inset 0 0 0 2px var(--acc)}
+.pill.clock{color:var(--ink);font-variant-numeric:tabular-nums}
+.pill.clock.warn{color:#FFC83D}
+.pill.clock.late{color:#fff;background:var(--bad)}
 .tile h3{font-size:24px;font-weight:700}
 .tile span{color:var(--muted);font-weight:700;font-size:15px}
 .hist{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);margin-top:18px}
@@ -113,6 +119,13 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .article p{margin:0 0 14px}
 .article ul{margin:0 0 16px;padding-left:24px}
 .article li{margin-bottom:6px}
+.article li.sub{margin-left:22px;list-style:circle}
+.article li.num{list-style:none;margin-left:-20px}
+.tblwrap{overflow-x:auto;margin:6px 0 18px}
+.tbl{border-collapse:collapse;width:100%;font-size:15px}
+.tbl th{background:var(--acc);color:#fff;text-align:left;padding:8px 10px;font-weight:800}
+.tbl td{padding:8px 10px;border-bottom:1px solid #34343B;vertical-align:top}
+.tbl tr:nth-child(even) td{background:rgba(255,255,255,.03)}
 .article code{background:#2A2A30;padding:2px 6px;border-radius:6px;font-size:.9em}
 .merke{background:var(--accsoft);border-left:5px solid var(--acc);border-radius:14px;padding:14px 18px;margin:18px 0;font-weight:600}
 .sect{display:flex;align-items:center;gap:12px;margin:36px 0 16px}
@@ -322,27 +335,37 @@ function figHtml(m, id){
 }
 function md(t, m){
   const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`(.+?)`/g,'<code>$1</code>');
-  let html='', list=false, para=[];
+  let html='', list=false, para=[], merke=[], table=[];
   const flushP=()=>{ if(para.length){ html+='<p>'+inline(para.join(' '))+'</p>'; para=[]; } };
   const closeL=()=>{ if(list){ html+='</ul>'; list=false; } };
+  const flushM=()=>{ if(merke.length){ html+='<div class="merke">'+merke.map(inline).join('<br>')+'</div>'; merke=[]; } };
+  const flushT=()=>{ if(!table.length) return;
+    const rows = table.filter(r => !/^\|[\s:|-]+\|$/.test(r)).map(r => r.replace(/^\||\|$/g,'').split('|').map(c => c.trim()));
+    html += '<div class="tblwrap"><table class="tbl">' + rows.map((r,i) => '<tr>' + r.map(c => i===0 ? '<th>'+inline(c)+'</th>' : '<td>'+inline(c)+'</td>').join('') + '</tr>').join('') + '</table></div>';
+    table=[]; };
+  const flushAll=()=>{ flushP(); closeL(); flushM(); flushT(); };
   let inCode = false, codeBuf = [];
   for (const raw of String(t||'').split('\n')){
     if (raw.trim().startsWith('```')){
       if (inCode){ html += '<pre class="code">' + esc(codeBuf.join('\n')) + '</pre>'; codeBuf = []; inCode = false; }
-      else { flushP(); closeL(); inCode = true; }
+      else { flushAll(); inCode = true; }
       continue;
     }
     if (inCode){ codeBuf.push(raw); continue; }
     const l = raw.trim();
-    if (!l){ flushP(); closeL(); continue; }
+    if (!l){ flushAll(); continue; }
+    if (l.startsWith('|') && l.endsWith('|')){ flushP(); closeL(); flushM(); table.push(l); continue; }
+    flushT();
+    if (l.startsWith('> ')){ flushP(); closeL(); merke.push(l.slice(2)); continue; }
+    flushM();
     const fm = l.match(/^\[\[fig:([\w-]+)\]\]$/);
     if (fm){ flushP(); closeL(); html += figHtml(m, fm[1]); continue; }
     if (l.startsWith('## ')){ flushP(); closeL(); html+='<h3>'+inline(l.slice(3))+'</h3>'; continue; }
-    if (l.startsWith('> ')){ flushP(); closeL(); html+='<div class="merke">'+inline(l.slice(2))+'</div>'; continue; }
-    if (/^[-•] /.test(l)){ flushP(); if(!list){ html+='<ul>'; list=true; } html+='<li>'+inline(l.slice(2))+'</li>'; continue; }
+    if (/^[-•] /.test(l)){ flushP(); if(!list){ html+='<ul>'; list=true; } html+='<li'+(/^\s{2,}/.test(raw)?' class="sub"':'')+'>'+inline(l.slice(2))+'</li>'; continue; }
+    if (/^\d+\. /.test(l)){ flushP(); if(!list){ html+='<ul>'; list=true; } html+='<li class="num">'+inline(l)+'</li>'; continue; }
     closeL(); para.push(l);
   }
-  flushP(); closeL(); return html;
+  flushAll(); return html;
 }
 
 /* ---------- state ---------- */
@@ -545,7 +568,8 @@ const GEN = {
       explain:`${which} = ${formula} ≈ ${r3(val)}. (Accuracy ${r3(acc)}, Recall ${r3(rec)}, Precision ${r3(pre)}, F1 ${r3(f1)})` };
   } },
 };
-const qLabel = q => q.gen ? (GEN[q.gen] ? GEN[q.gen].title + ' (wechselnde Zahlen)' : 'Rechenaufgabe') : ((q.prompts||[])[0] || '');
+const qLabel = q => q.gen ? (GEN[q.gen] ? GEN[q.gen].title + ' (wechselnde Zahlen)' : 'Rechenaufgabe') : ((q.exam ? '🎓 ' : '') + ((q.prompts||[])[0] || q.prompt || ''));
+const examQs = m => (m && m.questions || []).filter(q => q.exam);
 
 /* ---------- Python-Codeaufgaben mit Zufallswerten ---------- */
 const pyFloat = v => Number.isInteger(v) ? v + '.0' : String(v);
@@ -668,9 +692,14 @@ function buildQ(q, m){
   const fig = q.fig && m && m.figures && m.figures[q.fig] ? q.fig : null;
   if (Array.isArray(q.options) && Array.isArray(q.answers)) {
     // Originalfrage: Text, Code und Antworten unverändert, Reihenfolge wie im Original
-    const options = q.options.map(String);
-    return { prompt:q.prompt||'', code:q.code||'', options, answers:q.answers.slice(), answer:q.answers[0], multi: q.answers.length>1 || !!q.multi,
-             explain:q.explain||'', fig, original:true, mono:!!q.mono };
+    let options = q.options.map(String), answers = q.answers.slice();
+    if (q.exam && !q.keep){
+      // Prof-Fragen: Text wortgetreu, aber Reihenfolge gemischt (gegen Auswendiglernen); „Keine der …“ bleibt am Ende
+      const idx = options.map((_,i) => i), tail = idx.filter(i => /^Keine der/i.test(options[i])), body = shuffle(idx.filter(i => !tail.includes(i))), order = body.concat(tail);
+      answers = answers.map(a => order.indexOf(a)); options = order.map(i => options[i]);
+    }
+    return { prompt:q.prompt||'', code:q.code||'', options, answers, answer:answers[0], multi: answers.length>1 || !!q.multi,
+             explain:q.explain||'', fig, original:!q.exam, exam:!!q.exam, src:q.src||'', mono:!!q.mono };
   }
   if (q.gen && GEN[q.gen]) {
     let g; try { g = GEN[q.gen].make(); } catch(e) { g = null; }
@@ -691,7 +720,9 @@ function buildQ(q, m){
 }
 function selectQs(m, mode, n){
   n = n || 10;
-  const qs = m.questions||[], st = q => status(m,q);
+  const isExam = mode==='exam' || mode==='examWrong';
+  const qs = isExam ? examQs(m) : (m.questions||[]), st = q => status(m,q);
+  if (mode==='examWrong') return shuffle(qs.filter(q => st(q)==='w')).slice(0,n);
   if (mode==='wrong') return shuffle(qs.filter(q => st(q)==='w')).slice(0,n);
   if (mode==='open')  return shuffle(qs.filter(q => !st(q))).slice(0,n);
   if (mode==='right') return shuffle(qs.filter(q => st(q)==='r')).slice(0,n);
@@ -851,13 +882,15 @@ function vModule(){
   const tests = P.tests.filter(t => t.m===m.id && t.mode==='mix').slice(-8);
   const last = tests[tests.length-1];
   const noQ = !st.n;
+  const ex = examQs(m), exOk = ex.filter(q => status(m,q)==='r').length, lastEx = P.tests.filter(t => t.m===m.id && t.mode==='exam').slice(-1)[0];
   return `<div class="wrap fade" style="${accStyle(m)}">
     <div class="top">${backBtn('home','Module')}<span class="spacer"></span>${coinPill()}</div>
     <div class="hero"><div class="memo">${esc(m.emoji||'📘')}</div><div><h1>${esc(m.title)}</h1>${m.subtitle?`<p>${esc(m.subtitle)}</p>`:''}</div></div>
-    <div class="tiles">
+    <div class="tiles${ex.length ? ' four' : ''}">
       <button class="tile" data-act="learn"><span class="ic">📖</span><h3>Lernen</h3><span>${read} von ${ls.length} Texten gelesen</span></button>
       <button class="tile" data-act="test" data-mode="mix" ${noQ?'disabled style="opacity:.5"':''}><span class="ic">🎯</span><h3>Test</h3><span>${last ? 'Zuletzt '+last.p+' % richtig' : noQ ? 'Noch keine Fragen' : 'Noch kein Test gemacht'}</span></button>
       <button class="tile" data-act="wb"><span class="ic">📒</span><h3>Übungsheft</h3><span>${100-st.pOpen} % bearbeitet · ${st.pOk} % richtig</span></button>
+      ${ex.length ? `<button class="tile examtile" data-act="test" data-mode="exam"><span class="ic">🎓</span><h3>Prüfungssimulation</h3><span>${ex.length} ${esc(m.examLabel||'Prüfungsfragen')} · ${exOk} sitzen${lastEx ? ' · zuletzt '+lastEx.p+' %' : ''}</span></button>` : ''}
     </div>
     ${st.n ? `<div class="stacksec"><h3>🃏 Deine Karteikarten</h3><p>Tipp auf einen Stapel, um die Karten zu sehen und zu üben.</p>${stacksHtml(m)}</div>` : ''}
     ${tests.length ? `<div class="hist"><h3>Deine letzten Tests</h3><div class="hbars">${tests.map(t => `<div class="hb"><i class="${t.p<60?'low':''}" style="height:${Math.max(4,t.p)}%"></i><small>${t.p}%</small></div>`).join('')}</div></div>` : ''}
@@ -900,13 +933,13 @@ function qBlock(item, i, act, label, m, showFig){
     if (!item.praise) item.praise = rand(['Richtig! 🎉','Genau so! ✨','Sitzt! 💪','Stark! 🙌']);
     const right = b.answers.map(j => b.options[j]);
     const rightHtml = right.length > 1 ? '<ul class="rl">' + right.map(r => `<li>${esc(r)}</li>`).join('') + '</ul>' : `<strong>${esc(right[0])}</strong>`;
-    fb = `<div class="fb ${ok?'ok':'bad'}"><b>${ok ? item.praise : 'Nicht ganz.'}</b>${!ok ? `Richtig ${right.length > 1 ? 'sind' : 'wäre'}: ${rightHtml}` : ''}${b.explain ? `<div class="ex">${esc(b.explain)}</div>` : ''}</div>`;
+    fb = `<div class="fb ${ok?'ok':'bad'}"><b>${ok ? item.praise : 'Nicht ganz.'}</b>${!ok ? `Richtig ${right.length > 1 ? 'sind' : 'wäre'}: ${rightHtml}` : ''}${b.explain ? `<div class="ex">${esc(b.explain)}</div>` : ''}${b.exam && b.src ? `<div class="ex" style="opacity:.7">Quelle: ${esc(b.src)}</div>` : ''}</div>`;
   }
   const fig = showFig && answered && b.fig ? `<div class="qfig">${figHtml(m, b.fig)}</div>` : '';
   const code = b.code ? `<pre class="code">${esc(b.code)}</pre>` : '';
   const hint = b.multi && !answered ? `<div class="mhint">Mehrere Antworten können richtig sein – alle passenden antippen, dann prüfen.</div>` : '';
   const check = b.multi && !answered ? `<button class="btn acc" style="margin-top:14px;width:100%" data-act="${act === 'tAns' ? 'tCheck' : act === 'gAns' ? 'gCheck' : 'lCheck'}" data-i="${i}" ${sel.length ? '' : 'disabled'}>Antwort prüfen</button>` : '';
-  const tag = b.original ? ' · 📝 Original-Moodle-Frage' : (b.gen ? ' · 🎲 neue Zahlen' : '');
+  const tag = b.exam ? ' · 🎓 Testfrage vom Prof' : b.original ? ' · 📝 Original-Moodle-Frage' : (b.gen ? ' · 🎲 neue Zahlen' : '');
   return `<div class="qcard"><div class="qhead">${label}${tag}</div><div class="qtext">${promptHtml(b)}</div>${code}${hint}<div class="opts ${answered?'locked':''}">${opts}</div>${check}${fb}${fig}</div>`;
 }
 
@@ -933,12 +966,13 @@ function vTest(){
   const answered = it.ok !== undefined;
   const dots = T.items.map((x,i) => `<i class="${x.ok === undefined ? '' : (x.ok ? 'ok' : 'bad')} ${i===T.idx?'cur':''}"></i>`).join('');
   const coinUi = '';
-  const modeLabel = T.mode==='wrong' ? 'Fehler-Training' : T.mode==='open' ? 'Neue Fragen' : T.mode==='right' ? 'Wiederholen' : 'Test';
+  const modeLabel = T.mode==='exam' ? 'Prüfungssimulation' : T.mode==='examWrong' ? 'Prüfung · Fehler' : T.mode==='wrong' ? 'Fehler-Training' : T.mode==='open' ? 'Neue Fragen' : T.mode==='right' ? 'Wiederholen' : 'Test';
+  const clock = T.limit ? `<span class="pill clock" id="examclock">⏱ ${fmtMs(T.limit - (Date.now()-T.t0))}</span>` : '';
   return `<div class="wrap fade" style="${accStyle(m)}">
     <div class="top">
       ${S.confirmQuit ? `<button class="back" data-act="quitYes" style="color:var(--bad)">Wirklich abbrechen?</button><button class="back" data-act="quitNo">Weitermachen</button>`
                       : `<button class="back" data-act="quit">✕ Abbrechen</button>`}
-      <span class="spacer"></span>${coinPill()}<span class="pill">${esc(m.emoji||'')} ${modeLabel}</span>
+      <span class="spacer"></span>${clock}<span class="pill">${esc(m.emoji||'')} ${modeLabel}</span>
     </div>
     <div class="prog"><div class="bar"><i style="width:${(T.idx + (answered?1:0))/n*100}%"></i></div><b>${T.idx+1} / ${n}</b></div>
     <div class="dots">${dots}</div>
@@ -959,10 +993,12 @@ function vResult(){
     <div class="ringwrap">${ring(p, pass ? 'var(--ok)' : p>=60 ? 'var(--ink)' : 'var(--bad)')}<div class="pct">${p}%</div></div>
     <span class="badge ${pass?'ok':'bad'}">${pass ? 'Bestanden' : 'Noch nicht bestanden'} · ab 80 %</span>
     <h1>${head}</h1>
-    <p class="sub">${r} von ${n} Fragen richtig</p>
+    <p class="sub">${r} von ${n} ${T.exam ? 'Prof-Fragen' : 'Fragen'} richtig${T.exam ? ` · Zeit: ${fmtMs((T.tEnd||Date.now()) - T.t0)} von ${fmtMs(T.limit)}${T.timeUp ? ' (überzogen)' : ''}` : ''}</p>
     <div class="btnrow" style="justify-content:center">
-      <button class="btn acc" data-act="test" data-mode="mix">Neuer Test</button>
-      ${wrong.length ? `<button class="btn ghost" data-act="test" data-mode="wrong">Fehler üben</button>` : ''}
+      ${T.exam ? `<button class="btn acc" data-act="test" data-mode="exam">Neue Simulation</button>
+      ${wrong.length ? `<button class="btn ghost" data-act="test" data-mode="examWrong">Nur Fehler wiederholen</button>` : ''}`
+      : `<button class="btn acc" data-act="test" data-mode="mix">Neuer Test</button>
+      ${wrong.length ? `<button class="btn ghost" data-act="test" data-mode="wrong">Fehler üben</button>` : ''}`}
       <button class="btn ghost" data-act="openMod" data-id="${esc(m.id)}">Zum Modul</button>
     </div>
     ${wrong.length ? `<div class="wronglist"><h3 style="font-size:22px;margin-bottom:12px">Das schauen wir uns nochmal an</h3>${wrong.map(x => `<div class="wl"><div class="q">${promptHtml(x.b)}${x.coin?'<span class="tag">🪙 ausgeglichen</span>':''}</div>${x.b.code ? `<pre class="code sm">${esc(x.b.code)}</pre>` : ''}<div class="y">${esc(chosenTxt(x))}</div><div class="a">✓ ${esc(x.b.answers.map(j => x.b.options[j]).join(' · '))}</div></div>`).join('')}</div>` : ''}
@@ -1088,11 +1124,30 @@ function finishAnswer(it, chosen, m){
   if (it.onDone) it.onDone(it);
   render();
 }
+let examClock = null;
+function fmtMs(ms){ const s = Math.max(0, Math.round(ms/1000)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+function startExamClock(){
+  clearInterval(examClock);
+  if (!S.test || !S.test.limit) return;
+  const tick = () => {
+    const T = S.test, el = document.getElementById('examclock');
+    if (!T || !T.limit || S.view !== 'test'){ clearInterval(examClock); return; }
+    if (!el) return;
+    const left = T.limit - (Date.now() - T.t0);
+    if (left <= 0 && !T.timeUp){ T.timeUp = true; }
+    el.textContent = left > 0 ? '⏱ ' + fmtMs(left) : '⏱ Zeit um';
+    el.classList.toggle('late', left <= 0);
+    el.classList.toggle('warn', left > 0 && left < 60000);
+  };
+  tick(); examClock = setInterval(tick, 1000);
+}
 function startTest(mode){
   const m = mod(); if (!m) return;
-  const qs = selectQs(m, mode, 10); if (!qs.length) return;
-  S.test = { modId:m.id, mode, items: qs.map(q => ({ qid:q.id, b:buildQ(q, m), chosen:null, sel:[] })), idx:0, saved:false };
+  const exam = mode==='exam' || mode==='examWrong';
+  const qs = selectQs(m, mode, exam ? 30 : 10); if (!qs.length) return;
+  S.test = { modId:m.id, mode, exam, items: qs.map(q => ({ qid:q.id, b:buildQ(q, m), chosen:null, sel:[] })), idx:0, saved:false, t0:Date.now(), limit: exam ? qs.length*60000 : 0 };
   go('test');
+  startExamClock();
 }
 const A = {
   welcome: () => go('welcome'),
@@ -1111,6 +1166,7 @@ const A = {
     const T = S.test; if (!T) return;
     if (T.idx+1 < T.items.length){ T.idx++; S.confirmQuit=false; render(); window.scrollTo({top:0,behavior:'smooth'}); return; }
     const r = T.items.filter(isRight).length, p = Math.round(r/T.items.length*100);
+    if (!T.tEnd) T.tEnd = Date.now();
     if (!T.saved){ P.tests.push({ m:T.modId, mode:T.mode, p, r, n:T.items.length, t:Date.now() }); P.tests = P.tests.slice(-150); T.saved = true; save(); }
     go('result');
     if (p>=80) confetti();
