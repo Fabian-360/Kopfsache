@@ -65,8 +65,13 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .h-title{font-size:40px;font-weight:800;margin:6px 0 4px}
 .h-sub{color:var(--muted);margin:0 0 26px;font-weight:600}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
-.subjgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:0 18px;grid-auto-flow:row dense;align-items:start}
+.wrap.wide{max-width:1140px}
+.subjgrid{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:0 22px;grid-auto-flow:row dense;align-items:stretch}
+.subjgrp{display:flex;flex-direction:column}
+.subjgrp .grid{grid-template-columns:1fr;gap:22px;flex:1}
 .subjgrp.wide{grid-column:1/-1}
+.subjgrp.wide .grid{grid-template-columns:repeat(var(--cols,3),minmax(0,1fr))}
+@media (max-width:640px){.subjgrid,.subjgrp.wide .grid{grid-template-columns:1fr}}
 .subjgrp .grid{height:100%}
 .mcard{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);text-align:left;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;transition:transform .15s}
 .mcard:active{transform:scale(.98)}
@@ -909,12 +914,15 @@ function vHome(){
   const mods = S.modules.filter(m => modSem(m) === sem);
   const subjects = [...new Set(mods.map(m => m.subject || ''))];
   // Fächer mit mehreren Modulen bekommen eine ganze Zeile, Fächer mit einem Modul stehen nebeneinander
-  const grouped = '<div class="subjgrid">' + subjects.map(sub => {
+  // Spaltenzahl so wählen, dass die Karten die Breite füllen (max. 3)
+  const sizes = subjects.map(sub => mods.filter(m => (m.subject || '') === sub).length);
+  const cols = Math.max(1, Math.min(3, Math.max(...sizes, sizes.filter(n => n === 1).length)));
+  const grouped = `<div class="subjgrid" style="--cols:${cols}">` + subjects.map(sub => {
     const ms = mods.filter(m => (m.subject || '') === sub);
     return `<section class="subjgrp ${ms.length > 1 ? 'wide' : ''}">` + (subjects.length > 1 || sub ? `<h3 class="subj">${esc(sub || 'Weitere Module')}</h3>` : '') + `<div class="grid">${ms.map(modCard).join('')}</div></section>`;
   }).join('') + '</div>';
   const chips = list.length > 1 || (list[0] && list[0].term) ? `<div class="semchips">${list.map(x => `<button class="semchip ${x.n === sem ? 'on' : ''}" data-act="sem" data-n="${x.n}">${esc(x.label)}${x.term ? `<small>${esc(x.term)}</small>` : ''}${x.n < newest ? '<small>📦 Archiv</small>' : ''}</button>`).join('')}</div>` : '';
-  return `<div class="wrap fade">
+  return `<div class="wrap wide fade">
     <div class="top">${backBtn('welcome','Start')}<span class="spacer"></span><span class="pill">🔥 ${streak()}</span><button class="pill" data-act="settings" aria-label="Einstellungen">⚙️</button></div>
     ${noteHtml()}
     <h1 class="h-title">Deine Module</h1>
