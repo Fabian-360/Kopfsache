@@ -180,6 +180,17 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .qrow small{color:var(--muted);font-weight:700;font-size:13px;white-space:nowrap}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
 :root{--gold:#FFC83D}
+pre.code{background:#0E0E11;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:0 0 18px;font:15px/1.55 ui-monospace,Menlo,monospace;color:#F3F1EC;overflow-x:auto;white-space:pre;tab-size:4}
+pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
+.opt .ot{white-space:pre-wrap}
+.opt.mono .ot{font-family:ui-monospace,Menlo,monospace;font-weight:600;font-size:16px}
+.opt.sel{border-color:var(--gold);background:rgba(255,200,61,.08)}
+.opt.sel .l{background:var(--gold);color:#000}
+.opt .l.box{border-radius:8px}
+.opt.ok.miss{border-style:dashed}
+.mhint{font-size:14px;color:var(--gold);font-weight:700;margin:-6px 0 14px}
+.fb .ex{margin-top:6px}
+.fb ul.rl{margin:4px 0 0;padding-left:20px}
 .fig{margin:22px 0;padding:0}
 .fig svg{width:100%;height:auto;display:block;border-radius:18px}
 .fig figcaption{font-size:14px;color:var(--muted);text-align:center;margin-top:8px;font-weight:600;line-height:1.4}
@@ -266,7 +277,14 @@ function md(t, m){
   let html='', list=false, para=[];
   const flushP=()=>{ if(para.length){ html+='<p>'+inline(para.join(' '))+'</p>'; para=[]; } };
   const closeL=()=>{ if(list){ html+='</ul>'; list=false; } };
+  let inCode = false, codeBuf = [];
   for (const raw of String(t||'').split('\n')){
+    if (raw.trim().startsWith('```')){
+      if (inCode){ html += '<pre class="code">' + esc(codeBuf.join('\n')) + '</pre>'; codeBuf = []; inCode = false; }
+      else { flushP(); closeL(); inCode = true; }
+      continue;
+    }
+    if (inCode){ codeBuf.push(raw); continue; }
     const l = raw.trim();
     if (!l){ flushP(); closeL(); continue; }
     const fm = l.match(/^\[\[fig:([\w-]+)\]\]$/);
@@ -481,13 +499,137 @@ const GEN = {
 };
 const qLabel = q => q.gen ? (GEN[q.gen] ? GEN[q.gen].title + ' (wechselnde Zahlen)' : 'Rechenaufgabe') : ((q.prompts||[])[0] || '');
 
+/* ---------- Python-Codeaufgaben mit Zufallswerten ---------- */
+const pyFloat = v => Number.isInteger(v) ? v + '.0' : String(v);
+const pyRepr = v => typeof v === 'string' ? "'" + v + "'" : String(v);
+const pyList = a => '[' + a.map(pyRepr).join(', ') + ']';
+const WORDS = ['KI','Daten','Modell','Pixel','Bit','Code','Lernen','Test'];
+Object.assign(GEN, {
+  pyarith: { title:'Python: Rechenoperatoren (wechselnde Zahlen)', make(){
+    const op = rand(['+','-','*','/','//','%','**']);
+    let a = ri(2, 20), b = op === '**' ? ri(2, 3) : rand([2, 3, 4, 5]);
+    if (op === '**') a = ri(2, 5);
+    if (op === '/') a = b * ri(1, 6) + rand([0, 0, b/2]) ; if (op === '/' && b % 2) a = b * ri(1, 6);
+    const calc = { '+':a+b, '-':a-b, '*':a*b, '/':a/b, '//':Math.floor(a/b), '%':a%b, '**':a**b };
+    const fmt = (o, v) => o === '/' ? pyFloat(v) : String(v);
+    const c = fmt(op, calc[op]);
+    const cands = Object.keys(calc).filter(o => o !== op).map(o => fmt(o, calc[o])).concat([String(a)+String(b), pyFloat(calc[op]), String(calc[op]+1)]);
+    return { prompt:'Was wird ausgegeben?', code:`print(${a} ${op} ${b})`, correct:c, wrong:wrongs(c, cands, k => String(Number(calc[op]) + k + 1)), mono:true,
+      explain:`${a} ${op} ${b} = ${c}. Merke: / → float, // → ganzzahlig (abgerundet), % → Rest, ** → Potenz.` };
+  } },
+  pytype: { title:'Python: Datentypen erkennen (wechselnde Werte)', make(){
+    const lit = rand([['42','int'],['"42"','str'],['3.14','float'],['True','bool'],['"True"','str'],['7.0','float'],['-5','int'],['5 > 2','bool'],['"3.5"','str'],['int("8")','int'],['float(2)','float'],['str(10)','str'],['10 / 2','float'],['10 // 2','int'],['len("abc")','int'],['3 == 3.0','bool'],['"False"','str'],['2 * 1.5','float']]);
+    const c = `<class '${lit[1]}'>`;
+    return { prompt:'Was wird ausgegeben?', code:`x = ${lit[0]}\nprint(type(x))`, correct:c, wrong:['int','str','float','bool'].filter(t => t !== lit[1]).map(t => `<class '${t}'>`), mono:true,
+      explain:`x = ${lit[0]} ist vom Typ ${lit[1]}. Anführungszeichen → str, Dezimalpunkt oder / → float, Vergleich → bool, ganze Zahl → int.` };
+  } },
+  pyindex: { title:'Python: Listen & Indizes (wechselnde Listen)', make(){
+    const n = ri(4, 6), words = Math.random() < 0.5;
+    const L = words ? shuffle(WORDS).slice(0, n) : Array.from({length:n}, () => ri(1, 30));
+    const mode = rand(['pos','pos','neg','len','err','sum']);
+    let code, c, cands, ex;
+    if (mode === 'len') { code = `liste = ${pyList(L)}\nprint(len(liste))`; c = String(n); cands = [n-1, n+1, L[n-1], 0].map(String); ex = `len() zählt ${n} Elemente.`; }
+    else if (mode === 'err') { code = `liste = ${pyList(L)}\nprint(liste[${n}])`; c = 'IndexError'; cands = [String(L[n-1]), String(L[0]), 'None', String(n)]; ex = `Bei ${n} Elementen gibt es nur die Indizes 0 bis ${n-1} → IndexError.`; }
+    else if (mode === 'sum' && !words) { const i = ri(0, n-2), j = i + 1; code = `liste = ${pyList(L)}\nprint(liste[${i}] + liste[${j}])`; c = String(L[i]+L[j]); cands = [String(L[i]) + String(L[j]), String(L[i+1] + (L[i+2] ?? L[0])), String(L[i] + L[j] + 1), String(i+j)]; ex = `liste[${i}] = ${L[i]}, liste[${j}] = ${L[j]} → ${L[i]+L[j]}.`; }
+    else if (mode === 'neg') { const k = ri(1, 2); code = `liste = ${pyList(L)}\nprint(liste[-${k}])`; c = String(L[n-k]); cands = [String(L[k-1]), String(L[n-k-1]), String(L[k]), 'IndexError']; ex = `-${k} zählt von hinten: liste[-${k}] = liste[${n-k}] = ${L[n-k]}.`; }
+    else { const i = ri(0, n-1); code = `liste = ${pyList(L)}\nprint(liste[${i}])`; c = String(L[i]); cands = [String(L[(i+1)%n]), String(L[(i+n-1)%n]), String(i), 'IndexError']; ex = `Index beginnt bei 0 → liste[${i}] = ${L[i]}.`; }
+    return { prompt:'Was wird ausgegeben?', code, correct:c, wrong:wrongs(c, cands, k => String(k*7)), mono:true, explain:ex };
+  } },
+  pyloopsum: { title:'Python: Schleifen nachvollziehen (wechselnde Zahlen)', make(){
+    const a = ri(0, 3), b = a + ri(2, 4), f = rand([1, 1, 2, 3]);
+    const vals = []; for (let i = a; i < b; i++) vals.push(i);
+    const total = vals.reduce((s, i) => s + i*f, 0);
+    if (Math.random() < 0.3) {
+      return { prompt:`Wie oft wird der Schleifenkörper ausgeführt?`, code:`for i in range(${a}, ${b}):\n    print(i * ${f})`, correct:`${b-a}-mal`,
+        wrong:wrongs(`${b-a}-mal`, [`${b-a+1}-mal`, `${b-a-1}-mal`, `${b}-mal`, `${a}-mal`], k => `${b-a+k+1}-mal`), mono:false,
+        explain:`range(${a}, ${b}) = ${vals.join(', ')} → ${b-a} Durchläufe.` };
+    }
+    const body = f === 1 ? 'total = total + i' : `total = total + i * ${f}`;
+    const off = vals.reduce((s, i) => s + (i+1)*f, 0);
+    return { prompt:'Was wird ausgegeben?', code:`total = 0\nfor i in range(${a}, ${b}):\n    ${body}\nprint(total)`, correct:String(total),
+      wrong:wrongs(total, [off, total + b*f, total - a*f || total + 2, vals.length, b*f].map(String), k => String(total + k + 3)), mono:true,
+      explain:`i durchläuft ${vals.join(', ')} → total = ${vals.map(i => f === 1 ? i : i + '·' + f).join(' + ')} = ${total}.` };
+  } },
+  pyif: { title:'Python: if / elif / else (wechselnde Werte)', make(){
+    const t1 = ri(15, 25), t2 = ri(5, 12), x = ri(0, 30), cmp = rand(['>','>=']);
+    const ok = (v, t) => cmp === '>' ? v > t : v >= t;
+    const res = ok(x, t1) ? 'A' : ok(x, t2) ? 'B' : 'C';
+    return { prompt:'Was wird ausgegeben?', code:`x = ${x}\nif x ${cmp} ${t1}:\n    print("A")\nelif x ${cmp} ${t2}:\n    print("B")\nelse:\n    print("C")`, correct:res,
+      wrong:['A','B','C','A\nB'].filter(o => o !== res), mono:true,
+      explain:`x = ${x}: x ${cmp} ${t1} ist ${ok(x,t1) ? 'True' : 'False'}${ok(x,t1) ? '' : `, x ${cmp} ${t2} ist ${ok(x,t2) ? 'True' : 'False'}`} → ${res}. Nur der erste zutreffende Block läuft.` };
+  } },
+  pyappend: { title:'Python: Listen verändern & append() (wechselnde Listen)', make(){
+    const L = Array.from({length:ri(2,3)}, () => ri(1, 9)), add = [ri(10, 20)];
+    if (Math.random() < 0.5) add.push(ri(21, 30));
+    let code = `zahlen = ${pyList(L)}\n` + add.map(v => `zahlen.append(${v})`).join('\n');
+    let res = L.concat(add);
+    const change = Math.random() < 0.35;
+    if (change) { const i = ri(0, res.length - 1), v = ri(40, 50); code += `\nzahlen[${i}] = ${v}`; res = res.slice(); res[i] = v; }
+    code += '\nprint(zahlen)';
+    const c = pyList(res);
+    return { prompt:'Was wird ausgegeben?', code, correct:c,
+      wrong:wrongs(c, [pyList(add.concat(L)), pyList(L), pyList(res.slice(0, -1)), pyList(L.concat([add])).replace(/,(?=[^,]*$)/, ','), pyList(res.slice().reverse()), 'None'], k => pyList(res.concat([k]))), mono:true,
+      explain:`append() hängt am Ende an${change ? '; zahlen[i] = … ersetzt ein Element' : ''} → ${c}.` };
+  } },
+  pyfunc: { title:'Python: Funktionen & return (wechselnde Werte)', make(){
+    const T = rand([['a * b', (a,b) => a*b], ['a - b', (a,b) => a-b], ['a + b * 2', (a,b) => a + b*2], ['(a + b) * 2', (a,b) => (a+b)*2], ['a ** 2 - b', (a,b) => a*a - b], ['a // b + a % b', (a,b) => Math.floor(a/b) + a%b]]);
+    const x = ri(2, 9), y = ri(1, 5), v = T[1](x, y), sw = T[1](y, x);
+    const noRet = Math.random() < 0.2;
+    if (noRet) {
+      return { prompt:'Was wird ausgegeben?', code:`def f(a, b):\n    ergebnis = ${T[0]}\n\nprint(f(${x}, ${y}))`, correct:'None',
+        wrong:wrongs('None', [String(v), String(sw), 'ergebnis', '0'], k => String(v + k)), mono:true,
+        explain:`Die Funktion berechnet ${v}, gibt es aber nicht mit return zurück → None.` };
+    }
+    return { prompt:'Was wird ausgegeben?', code:`def f(a, b):\n    return ${T[0]}\n\nprint(f(${x}, ${y}))`, correct:String(v),
+      wrong:wrongs(v, [sw, 'None', v + 1, x + y, x * y].map(String), k => String(v + k + 2)), mono:true,
+      explain:`a = ${x}, b = ${y} (der Reihe nach) → ${T[0]} = ${v}.` };
+  } },
+  pycount: { title:'Python: Werte in Listen zählen (wechselnde Listen)', make(){
+    const L = Array.from({length:ri(6,8)}, () => ri(1, 6));
+    if (Math.random() < 0.5) {
+      const v = rand(L), c = L.filter(x => x === v).length;
+      return { prompt:'Was wird ausgegeben?', code:`werte = ${pyList(L)}\nanzahl = 0\nfor w in werte:\n    if w == ${v}:\n        anzahl = anzahl + 1\nprint(anzahl)`, correct:String(c),
+        wrong:wrongs(c, [L.length, c+1, c-1, v, c*v].map(String).filter(s => s !== '0' || c !== 0), k => String(c + k + 1)), mono:true,
+        explain:`${v} kommt ${c}-mal vor (Kurzform: werte.count(${v})).` };
+    }
+    const t = ri(2, 4), c = L.filter(x => x > t).length, s = L.filter(x => x > t).reduce((a, b) => a + b, 0);
+    return { prompt:'Was wird ausgegeben?', code:`werte = ${pyList(L)}\nanzahl = 0\nfor w in werte:\n    if w > ${t}:\n        anzahl = anzahl + 1\nprint(anzahl)`, correct:String(c),
+      wrong:wrongs(c, [L.filter(x => x >= t).length, L.length - c, s, c + 1].map(String), k => String(c + k + 1)), mono:true,
+      explain:`Werte größer als ${t}: ${L.filter(x => x > t).join(', ') || 'keine'} → ${c}.` };
+  } },
+  pystr: { title:'Python: Strings (wechselnde Wörter)', make(){
+    const s = rand(WORDS), t = rand(WORDS.filter(w => w !== s)), k = ri(2, 3);
+    const mode = rand(['plus','mal','len','idx']);
+    let code, c, cands, ex;
+    if (mode === 'plus') { code = `a = "${s}"\nb = "${t}"\nprint(a + b)`; c = s + t; cands = [s + ' ' + t, t + s, 'a + b', s + '+' + t]; ex = '+ hängt Strings ohne Leerzeichen aneinander.'; }
+    else if (mode === 'mal') { code = `print("${s}" * ${k})`; c = s.repeat(k); cands = [s + k, (s + ' ').repeat(k).trim(), s.repeat(k+1), 'TypeError']; ex = `String * ${k} wiederholt ihn ${k}-mal.`; }
+    else if (mode === 'len') { code = `print(len("${s}" + "${t}"))`; c = String((s + t).length); cands = [s.length, t.length, 2, (s + t).length + 1].map(String); ex = `"${s + t}" hat ${(s + t).length} Zeichen.`; }
+    else { code = `wort = "${s}${t}"\nprint(wort[${s.length}])`; c = t[0]; cands = [s[s.length-1], s[0], t[1] || t[0] + '?', String(s.length)]; ex = `Index ${s.length} ist das erste Zeichen nach "${s}" (Zählung ab 0) → "${t[0]}".`; }
+    return { prompt:'Was wird ausgegeben?', code, correct:c, wrong:wrongs(c, cands, k2 => c + k2), mono:true, explain:ex };
+  } },
+  pyrange: { title:'Python: range() (wechselnde Grenzen)', make(){
+    const a = ri(0, 4), b = a + ri(2, 5), vals = []; for (let i = a; i < b; i++) vals.push(i);
+    const c = pyList(vals), incl = vals.concat([b]), from1 = []; for (let i = a+1; i <= b; i++) from1.push(i);
+    return { prompt:'Was wird ausgegeben?', code:`print(list(range(${a}, ${b})))`, correct:c,
+      wrong:wrongs(c, [pyList(incl), pyList(from1), pyList([a, b]), pyList(vals.slice(1))], k => pyList(vals.concat([b + k]))), mono:true,
+      explain:`range(${a}, ${b}) beginnt bei ${a} und hört VOR ${b} auf.` };
+  } },
+});
+
 function buildQ(q, m){
   const fig = q.fig && m && m.figures && m.figures[q.fig] ? q.fig : null;
+  if (Array.isArray(q.options) && Array.isArray(q.answers)) {
+    // Originalfrage: Text, Code und Antworten unverändert, Reihenfolge wie im Original
+    const options = q.options.map(String);
+    return { prompt:q.prompt||'', code:q.code||'', options, answers:q.answers.slice(), answer:q.answers[0], multi: q.answers.length>1 || !!q.multi,
+             explain:q.explain||'', fig, original:true, mono:!!q.mono };
+  }
   if (q.gen && GEN[q.gen]) {
     let g; try { g = GEN[q.gen].make(); } catch(e) { g = null; }
     if (g && g.correct != null && g.wrong && g.wrong.length) {
       const options = shuffle([String(g.correct), ...g.wrong.slice(0,3).map(String)]);
-      return { prompt:g.prompt, options, answer: options.indexOf(String(g.correct)), inverse:!!g.inverse, explain: g.explain || q.explain || '', fig, gen:true };
+      const a = options.indexOf(String(g.correct));
+      return { prompt:g.prompt, code:g.code||'', mono:!!g.mono, options, answer:a, answers:[a], inverse:!!g.inverse, explain: g.explain || q.explain || '', fig, gen:true };
     }
   }
   const corr = q.correct||[], wr = q.wrong||[];
@@ -496,7 +638,8 @@ function buildQ(q, m){
   if (inverse){ prompt = rand(q.notPrompts); answer = rand(wr); others = pick(corr,3); }
   else { prompt = rand(q.prompts && q.prompts.length ? q.prompts : ['?']); answer = rand(corr); others = pick(wr,3); }
   const options = shuffle([answer, ...others]);
-  return { prompt, options, answer: options.indexOf(answer), inverse:!!inverse, explain: q.explain||'', fig };
+  const a = options.indexOf(answer);
+  return { prompt, code:q.code||'', mono:!!q.mono, options, answer:a, answers:[a], inverse:!!inverse, explain: q.explain||'', fig };
 }
 function selectQs(m, mode, n){
   n = n || 10;
@@ -580,7 +723,7 @@ function ring(p, color){
 }
 const backBtn = (act, label, extra) => `<button class="back" data-act="${act}"${extra||''}>‹ ${esc(label)}</button>`;
 const coinPill = () => `<span class="coins">🪙 <b>${P.coins}</b><span class="run">${[0,1,2].map(i=>`<i class="${i<P.run?'on':''}"></i>`).join('')}</span></span>`;
-const isRight = x => x.chosen===x.b.answer;
+const isRight = x => x.ok === true;
 const noteHtml = () => S.note ? `<div class="note">${esc(S.note)}</div>` : '';
 
 function vWelcome(){
@@ -660,30 +803,41 @@ function vLearn(){
 
 function newLessonQs(){
   const m = mod(); const qs = (m.questions||[]).filter(q => q.lesson===S.lessonId);
-  S.lq = pick(qs, 3).map(q => ({ qid:q.id, b:buildQ(q, m), chosen:null }));
+  S.lq = pick(qs, 3).map(q => ({ qid:q.id, b:buildQ(q, m), chosen:null, sel:[] }));
 }
 function qBlock(item, i, act, label, m, showFig){
-  const b = item.b, answered = item.chosen!==null;
+  const b = item.b, answered = item.ok !== undefined, sel = item.sel || [];
+  const picked = j => Array.isArray(item.chosen) ? item.chosen.includes(j) : item.chosen === j;
   const opts = b.options.map((o,j) => {
     let cls = '';
-    if (answered){ if (j===b.answer) cls='ok'; else if (j===item.chosen) cls='bad'; else cls='dim'; }
-    return `<button class="opt ${cls}" data-act="${act}" data-i="${i}" data-j="${j}"><span class="l">${'ABCD'[j]}</span><span>${esc(o)}</span></button>`;
+    if (answered){
+      if (b.answers.includes(j)) cls = picked(j) || !b.multi ? 'ok' : 'ok miss';
+      else if (picked(j)) cls = 'bad'; else cls = 'dim';
+    } else if (b.multi && sel.includes(j)) cls = 'sel';
+    const box = b.multi ? `<span class="l box">${answered ? (b.answers.includes(j) ? '✓' : (picked(j) ? '✕' : '')) : (sel.includes(j) ? '✓' : '')}</span>` : `<span class="l">${'ABCDEFGHIJ'[j]}</span>`;
+    return `<button class="opt ${cls}${b.mono ? ' mono' : ''}" data-act="${act}" data-i="${i}" data-j="${j}">${box}<span class="ot">${esc(o)}</span></button>`;
   }).join('');
   let fb = '';
   if (answered){
-    const ok = item.chosen===b.answer;
+    const ok = item.ok;
     if (!item.praise) item.praise = rand(['Richtig! 🎉','Genau so! ✨','Sitzt! 💪','Stark! 🙌']);
-    fb = `<div class="fb ${ok?'ok':'bad'}"><b>${ok ? item.praise : 'Nicht ganz.'}</b>${!ok?`Richtig wäre: <strong>${esc(b.options[b.answer])}</strong>${b.explain?'<br>':''}`:''}${esc(b.explain)}</div>`;
+    const right = b.answers.map(j => b.options[j]);
+    const rightHtml = right.length > 1 ? '<ul class="rl">' + right.map(r => `<li>${esc(r)}</li>`).join('') + '</ul>' : `<strong>${esc(right[0])}</strong>`;
+    fb = `<div class="fb ${ok?'ok':'bad'}"><b>${ok ? item.praise : 'Nicht ganz.'}</b>${!ok ? `Richtig ${right.length > 1 ? 'sind' : 'wäre'}: ${rightHtml}` : ''}${b.explain ? `<div class="ex">${esc(b.explain)}</div>` : ''}</div>`;
   }
   const fig = showFig && answered && b.fig ? `<div class="qfig">${figHtml(m, b.fig)}</div>` : '';
-  return `<div class="qcard"><div class="qhead">${label}${b.gen ? ' · 🎲 neue Zahlen' : ''}</div><div class="qtext">${promptHtml(b)}</div><div class="opts ${answered?'locked':''}">${opts}</div>${fb}${fig}</div>`;
+  const code = b.code ? `<pre class="code">${esc(b.code)}</pre>` : '';
+  const hint = b.multi && !answered ? `<div class="mhint">Mehrere Antworten können richtig sein – alle passenden antippen, dann prüfen.</div>` : '';
+  const check = b.multi && !answered ? `<button class="btn acc" style="margin-top:14px;width:100%" data-act="${act === 'tAns' ? 'tCheck' : 'lCheck'}" data-i="${i}" ${sel.length ? '' : 'disabled'}>Antwort prüfen</button>` : '';
+  const tag = b.original ? ' · 📝 Original-Moodle-Frage' : (b.gen ? ' · 🎲 neue Zahlen' : '');
+  return `<div class="qcard"><div class="qhead">${label}${tag}</div><div class="qtext">${promptHtml(b)}</div>${code}${hint}<div class="opts ${answered?'locked':''}">${opts}</div>${check}${fb}${fig}</div>`;
 }
 
 function vLesson(){
   const m = mod(); if (!m) return vHome();
   const l = (m.lessons||[]).find(x => x.id===S.lessonId); if (!l) return vLearn();
   const done = P.lessons[m.id+'::'+l.id];
-  const allAnswered = S.lq.length && S.lq.every(x => x.chosen!==null);
+  const allAnswered = S.lq.length && S.lq.every(x => x.ok !== undefined);
   return `<div class="wrap fade" style="${accStyle(m)}">
     <div class="top">${backBtn('learn','Alle Texte')}<span class="spacer"></span>${coinPill()}</div>
     <article class="article"><h1>${esc(l.title)}</h1>${md(l.text, m)}</article>
@@ -699,9 +853,8 @@ function vLesson(){
 function vTest(){
   const T = S.test, m = S.modules.find(x => x.id===T.modId); if (!m) return vHome();
   const it = T.items[T.idx], n = T.items.length;
-  const answered = it.chosen!==null;
-  const dots = T.items.map((x,i) => `<i class="${x.chosen===null ? '' : x.coin ? 'coin' : (x.chosen===x.b.answer?'ok':'bad')} ${i===T.idx?'cur':''}"></i>`).join('');
-  const wrongNow = answered && it.chosen!==it.b.answer;
+  const answered = it.ok !== undefined;
+  const dots = T.items.map((x,i) => `<i class="${x.ok === undefined ? '' : (x.ok ? 'ok' : 'bad')} ${i===T.idx?'cur':''}"></i>`).join('');
   const coinUi = '';
   const modeLabel = T.mode==='wrong' ? 'Fehler-Training' : T.mode==='open' ? 'Neue Fragen' : T.mode==='right' ? 'Wiederholen' : 'Test';
   return `<div class="wrap fade" style="${accStyle(m)}">
@@ -723,7 +876,8 @@ function vResult(){
   const n = T.items.length, r = T.items.filter(isRight).length, p = Math.round(r/n*100), used = T.items.filter(x => x.coin).length;
   const pass = p>=80;
   const head = p===100 ? 'Perfekt! 🏆' : p>=80 ? 'Richtig stark! 🎉' : p>=60 ? 'Gut dabei! 💪' : 'Da geht noch was 🌱';
-  const wrong = T.items.filter(x => x.chosen!==x.b.answer);
+  const wrong = T.items.filter(x => !x.ok);
+  const chosenTxt = x => (Array.isArray(x.chosen) ? x.chosen : [x.chosen]).map(j => x.b.options[j]).filter(v => v !== undefined).join(' · ') || '–';
   return `<div class="wrap fade" style="${accStyle(m)}"><div class="result">
     <div class="ringwrap">${ring(p, pass ? 'var(--ok)' : p>=60 ? 'var(--ink)' : 'var(--bad)')}<div class="pct">${p}%</div></div>
     <span class="badge ${pass?'ok':'bad'}">${pass ? 'Bestanden' : 'Noch nicht bestanden'} · ab 80 %</span>
@@ -734,7 +888,7 @@ function vResult(){
       ${wrong.length ? `<button class="btn ghost" data-act="test" data-mode="wrong">Fehler üben</button>` : ''}
       <button class="btn ghost" data-act="openMod" data-id="${esc(m.id)}">Zum Modul</button>
     </div>
-    ${wrong.length ? `<div class="wronglist"><h3 style="font-size:22px;margin-bottom:12px">Das schauen wir uns nochmal an</h3>${wrong.map(x => `<div class="wl"><div class="q">${promptHtml(x.b)}${x.coin?'<span class="tag">🪙 ausgeglichen</span>':''}</div><div class="y">${esc(x.b.options[x.chosen])}</div><div class="a">✓ ${esc(x.b.options[x.b.answer])}</div></div>`).join('')}</div>` : ''}
+    ${wrong.length ? `<div class="wronglist"><h3 style="font-size:22px;margin-bottom:12px">Das schauen wir uns nochmal an</h3>${wrong.map(x => `<div class="wl"><div class="q">${promptHtml(x.b)}${x.coin?'<span class="tag">🪙 ausgeglichen</span>':''}</div>${x.b.code ? `<pre class="code sm">${esc(x.b.code)}</pre>` : ''}<div class="y">${esc(chosenTxt(x))}</div><div class="a">✓ ${esc(x.b.answers.map(j => x.b.options[j]).join(' · '))}</div></div>`).join('')}</div>` : ''}
   </div></div>`;
 }
 
@@ -845,10 +999,27 @@ function render(){
 function go(view){ S.view = view; S.confirmQuit = false; render(); window.scrollTo(0,0); }
 
 /* ---------- actions ---------- */
+function pickAnswer(it, j, m){
+  if (it.ok !== undefined) return;
+  if (it.b.multi){ it.sel = it.sel || []; const k = it.sel.indexOf(j); if (k >= 0) it.sel.splice(k, 1); else it.sel.push(j); render(); return; }
+  finishAnswer(it, j, m);
+}
+function finishAnswer(it, chosen, m){
+  if (it.ok !== undefined) return;
+  if (Array.isArray(chosen)){
+    if (!chosen.length) return;
+    const a = it.b.answers.slice().sort().join(','), c = chosen.slice().sort().join(',');
+    it.ok = a === c;
+  } else it.ok = it.b.answers.includes(chosen);
+  it.chosen = chosen;
+  const q = m && (m.questions||[]).find(x => x.id===it.qid);
+  if (q) record(m, q, it.ok);
+  render();
+}
 function startTest(mode){
   const m = mod(); if (!m) return;
   const qs = selectQs(m, mode, 10); if (!qs.length) return;
-  S.test = { modId:m.id, mode, items: qs.map(q => ({ qid:q.id, b:buildQ(q, m), chosen:null })), idx:0, saved:false };
+  S.test = { modId:m.id, mode, items: qs.map(q => ({ qid:q.id, b:buildQ(q, m), chosen:null, sel:[] })), idx:0, saved:false };
   go('test');
 }
 const A = {
@@ -858,20 +1029,12 @@ const A = {
   learn: () => go('learn'),
   lesson: d => { S.lessonId = d.id; newLessonQs(); go('lesson'); },
   moreLq: () => { newLessonQs(); render(); },
-  lAns: d => {
-    const it = S.lq[+d.i]; if (!it || it.chosen!==null) return;
-    it.chosen = +d.j; const m = mod(), q = (m.questions||[]).find(x => x.id===it.qid);
-    if (q) record(m, q, it.chosen===it.b.answer);
-    render();
-  },
+  lAns: d => { const it = S.lq[+d.i]; if (!it) return; pickAnswer(it, +d.j, mod()); },
+  lCheck: d => { const it = S.lq[+d.i]; if (!it) return; finishAnswer(it, it.sel.slice(), mod()); },
   markRead: () => { const m = mod(); P.lessons[m.id+'::'+S.lessonId] = Date.now(); save(); go('learn'); },
   test: d => startTest(d.mode||'mix'),
-  tAns: d => {
-    const T = S.test, it = T && T.items[+d.i]; if (!it || it.chosen!==null) return;
-    it.chosen = +d.j; const m = S.modules.find(x => x.id===T.modId), q = (m.questions||[]).find(x => x.id===it.qid);
-    if (q) record(m, q, it.chosen===it.b.answer);
-    render();
-  },
+  tAns: d => { const T = S.test, it = T && T.items[+d.i]; if (!it) return; pickAnswer(it, +d.j, S.modules.find(x => x.id===T.modId)); },
+  tCheck: d => { const T = S.test, it = T && T.items[+d.i]; if (!it) return; finishAnswer(it, it.sel.slice(), S.modules.find(x => x.id===T.modId)); },
   next: () => {
     const T = S.test; if (!T) return;
     if (T.idx+1 < T.items.length){ T.idx++; S.confirmQuit=false; render(); window.scrollTo({top:0,behavior:'smooth'}); return; }
