@@ -225,13 +225,18 @@ body.edopen{overflow:hidden}
 .semchip small{display:block;font-size:12px;color:var(--muted);font-weight:700}
 .semchip.on{border-color:var(--acc);background:#2A1212}
 .subj{font-size:20px;margin:22px 0 12px;color:var(--ink)}
-.gwrap{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;box-sizing:border-box;max-width:1100px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 12px calc(20px + env(safe-area-inset-bottom))}
-.gtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.ghud{flex:1;display:flex;gap:8px;flex-wrap:wrap}
-.gh{background:var(--card);border-radius:999px;padding:7px 12px;font-weight:800;font-size:15px;box-shadow:var(--shadow)}
-.gh b{color:var(--gold)} .gh.hot{color:var(--gold);outline:2px solid var(--gold)}
+.gwrap{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;box-sizing:border-box;padding:calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
+.gstage{--side:132px;--cw:min(calc(100vw - 24px - var(--side) - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100vh - 230px) * 1.5625));margin:auto;display:flex;flex-direction:column;width:calc(var(--cw) + var(--side) + 12px)}
+@supports (height:100dvh){.gstage{--cw:min(calc(100vw - 24px - var(--side) - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100dvh - 230px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 1.5625))}}
+.gtop{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.gmain{display:flex;gap:12px;align-items:stretch}
+.gside{width:var(--side);flex:none;display:flex;flex-direction:column;gap:10px}
+.gh{flex:1;min-height:0;background:#000;border:2px solid var(--acc);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px;text-align:center}
+.gh b{font-size:20px;font-weight:800;color:var(--ink);white-space:nowrap}.gh small{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.gh.coin b{color:var(--gold)} .gh.hot{border-color:var(--gold)} .gh.hot b{color:var(--gold)}
+@media (max-width:700px){.gstage{--cw:calc(100vw - 24px);width:var(--cw)}.gmain{flex-direction:column}.gside{width:auto;flex-direction:row;gap:6px}.gh{min-height:54px}.gh b{font-size:15px}.gh small{font-size:9px}}
 .gsp{min-width:52px;justify-content:center;color:var(--ink)}
-.gcanvas{width:100%;margin-top:auto!important;margin-bottom:auto!important;position:relative;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);touch-action:manipulation;max-width:calc((100vh - 140px) * 1.5625);max-width:calc((100dvh - 140px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 1.5625);margin:0 auto}
+.gcanvas{width:var(--cw);flex:none;box-sizing:border-box;border:3px solid var(--acc);position:relative;border-radius:20px;overflow:hidden;box-shadow:0 0 30px rgba(225,6,0,.25);touch-action:manipulation}
 .gcanvas canvas{width:100%;height:auto;display:block}
 .gbar{display:flex;align-items:center;gap:12px;margin-top:12px}
 .ghint{color:var(--muted);font-weight:700;font-size:14px;text-align:center;margin-top:10px}
@@ -252,7 +257,7 @@ body.edopen{overflow:hidden}
 .mapsvg svg{width:100%;height:100%;display:block}
 .mapb b{font-size:15px} .mapb small{color:var(--gold);font-weight:800;font-size:12px} .mapb small.md{color:var(--muted);font-weight:600}
 .edot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;box-shadow:inset -2px -2px 0 rgba(0,0,0,.25)}
-.wprev{background:var(--card);border-radius:16px;padding:10px 14px;margin-top:10px;box-shadow:var(--shadow)}
+.wprev{background:var(--card);border-radius:16px;padding:10px 14px;margin-top:12px;box-shadow:var(--shadow)}
 .wprev b{display:block;font-size:14px;margin-bottom:6px}
 .wprev div{display:flex;flex-wrap:wrap;gap:6px 14px}
 .wpi{font-weight:700;font-size:14px;color:var(--muted)}
@@ -375,7 +380,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '24';
+const APP_VERSION = '25';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1980,7 +1985,7 @@ function drawGame(G, ts){
 function updateHud(){
   const G = S.play, h = document.getElementById('ghud'); if (!G || !h) return;
   const mult = GCFG.mult(G.streak);
-  h.innerHTML = `<span class="gh"><b>🪙 ${G.coins}</b></span><span class="gh">❤️ ${G.lives}</span><span class="gh">🌊 Welle ${G.wave}</span><span class="gh ${mult>1?'hot':''}">🔥 ${G.streak} · ${mult}×</span><span class="gh">⭐ ${G.score}</span>`;
+  h.innerHTML = `<div class="gh coin"><b>🪙 ${G.coins}</b><small>Münzen</small></div><div class="gh"><b>❤️ ${G.lives}</b><small>Leben</small></div><div class="gh"><b>🌊 ${G.wave}</b><small>Welle</small></div><div class="gh ${mult>1?'hot':''}"><b>🔥 ${G.streak}</b><small>Serie · ${mult}×</small></div><div class="gh"><b>⭐ ${G.score}</b><small>Punkte</small></div>`;
 }
 const edot = t => `<i class="edot" style="background:${ENEMY[t].color}"></i>`;
 function wavePreview(n){
@@ -2048,11 +2053,11 @@ function vGame(){
   </div>`;
 }
 function vPlay(){
-  return `<div class="gwrap">
-    <div class="gtop"><button class="back" data-act="gQuit">✕</button><div id="ghud" class="ghud"></div><span id="gwave"></span><button class="pill gsp" data-act="gSpeed" id="gspeed">1×</button></div>
-    <div class="gcanvas"><canvas id="gcv" width="${GW*GR}" height="${GH*GR}"></canvas></div>
+  return `<div class="gwrap"><div class="gstage">
+    <div class="gtop"><button class="back" data-act="gQuit">✕</button><span class="spacer"></span><span id="gwave"></span><button class="pill gsp" data-act="gSpeed" id="gspeed">1×</button></div>
+    <div class="gmain"><div id="ghud" class="gside"></div><div class="gcanvas"><canvas id="gcv" width="${GW*GR}" height="${GH*GR}"></canvas></div></div>
     <div id="gui"></div>
-  </div>`;
+  </div></div>`;
 }
 function renderGameUI(){
   const G = S.play, el = document.getElementById('gui'); if (!G || !el) return;
