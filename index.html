@@ -123,6 +123,8 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .article li.num{list-style:none;margin-left:-20px}
 .tblwrap{overflow-x:auto;margin:6px 0 18px}
 .tbl{border-collapse:collapse;width:100%;font-size:15px}
+.qctx{background:rgba(255,255,255,.04);border-left:3px solid var(--acc);border-radius:10px;padding:10px 14px;margin:0 0 14px;font-size:14.5px;line-height:1.5;color:var(--muted)}
+.qctx p{margin:0 0 6px}
 .tbl th{background:var(--acc);color:#fff;text-align:left;padding:8px 10px;font-weight:800}
 .tbl td{padding:8px 10px;border-bottom:1px solid #34343B;vertical-align:top}
 .tbl tr:nth-child(even) td{background:rgba(255,255,255,.03)}
@@ -699,7 +701,7 @@ function buildQ(q, m){
       answers = answers.map(a => order.indexOf(a)); options = order.map(i => options[i]);
     }
     return { prompt:q.prompt||'', code:q.code||'', options, answers, answer:answers[0], multi: answers.length>1 || !!q.multi,
-             explain:q.explain||'', fig, original:!q.exam, exam:!!q.exam, src:q.src||'', mono:!!q.mono };
+             explain:q.explain||'', fig, original:!q.exam, exam:!!q.exam, src:q.src||'', mono:!!q.mono, ctx:q.ctx||'', figPre:!!q.figPre };
   }
   if (q.gen && GEN[q.gen]) {
     let g; try { g = GEN[q.gen].make(); } catch(e) { g = null; }
@@ -935,12 +937,14 @@ function qBlock(item, i, act, label, m, showFig){
     const rightHtml = right.length > 1 ? '<ul class="rl">' + right.map(r => `<li>${esc(r)}</li>`).join('') + '</ul>' : `<strong>${esc(right[0])}</strong>`;
     fb = `<div class="fb ${ok?'ok':'bad'}"><b>${ok ? item.praise : 'Nicht ganz.'}</b>${!ok ? `Richtig ${right.length > 1 ? 'sind' : 'wäre'}: ${rightHtml}` : ''}${b.explain ? `<div class="ex">${esc(b.explain)}</div>` : ''}${b.exam && b.src ? `<div class="ex" style="opacity:.7">Quelle: ${esc(b.src)}</div>` : ''}</div>`;
   }
-  const fig = showFig && answered && b.fig ? `<div class="qfig">${figHtml(m, b.fig)}</div>` : '';
+  const fig = showFig && answered && b.fig && !b.figPre ? `<div class="qfig">${figHtml(m, b.fig)}</div>` : '';
+  const pre = b.figPre && b.fig ? `<div class="qfig">${figHtml(m, b.fig)}</div>` : '';
+  const ctx = b.ctx ? `<div class="qctx">${b.ctx.split('\n\n').map(p => '<p>'+esc(p)+'</p>').join('')}</div>` : '';
   const code = b.code ? `<pre class="code">${esc(b.code)}</pre>` : '';
   const hint = b.multi && !answered ? `<div class="mhint">Mehrere Antworten können richtig sein – alle passenden antippen, dann prüfen.</div>` : '';
   const check = b.multi && !answered ? `<button class="btn acc" style="margin-top:14px;width:100%" data-act="${act === 'tAns' ? 'tCheck' : act === 'gAns' ? 'gCheck' : 'lCheck'}" data-i="${i}" ${sel.length ? '' : 'disabled'}>Antwort prüfen</button>` : '';
-  const tag = b.exam ? ' · 🎓 Testfrage vom Prof' : b.original ? ' · 📝 Original-Moodle-Frage' : (b.gen ? ' · 🎲 neue Zahlen' : '');
-  return `<div class="qcard"><div class="qhead">${label}${tag}</div><div class="qtext">${promptHtml(b)}</div>${code}${hint}<div class="opts ${answered?'locked':''}">${opts}</div>${check}${fb}${fig}</div>`;
+  const tag = b.exam ? (b.src && /Altklausur/.test(b.src) ? ' · 📜 Altklausur' : ' · 🎓 Testfrage vom Prof') : b.original ? ' · 📝 Original-Moodle-Frage' : (b.gen ? ' · 🎲 neue Zahlen' : '');
+  return `<div class="qcard"><div class="qhead">${label}${tag}</div>${ctx}${pre}<div class="qtext">${promptHtml(b)}</div>${code}${hint}<div class="opts ${answered?'locked':''}">${opts}</div>${check}${fb}${fig}</div>`;
 }
 
 function vLesson(){
