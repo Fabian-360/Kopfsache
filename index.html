@@ -400,7 +400,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '30';
+const APP_VERSION = '31';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1283,9 +1283,10 @@ async function shareJson(obj, name, title){
   const blob = new Blob([JSON.stringify(obj, null, 1)], { type:'application/json' });
   try {
     const file = new File([blob], name, { type:'application/json' });
-    if (navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title }); return; }
-  } catch(e){ if (e && e.name==='AbortError') return; }
+    if (navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title }); return true; }
+  } catch(e){ if (e && e.name==='AbortError') return false; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  return true;
 }
 function toast(html){ const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = html; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
 const rawQ = (mid, qid) => { const m = S.raw.find(x => x.id === mid); return m && (m.questions||[]).find(q => q.id === qid) || null; };
@@ -1487,7 +1488,10 @@ const A = {
   settings: () => go('settings'),
   sem: d => { setSem(+d.n); render(); },
   reload: () => { location.reload(); },
-  backup: () => { P.lastBackup = Date.now(); save(); if (S.view === 'home') render(); return shareJson(P, 'kopfsache-backup-' + fmtDay(new Date()) + '.json', 'Kopfsache Backup'); },
+  backup: async () => {   // erst als gesichert zählen, wenn das Teilen nicht abgebrochen wurde
+    const ok = await shareJson(P, 'kopfsache-backup-' + fmtDay(new Date()) + '.json', 'Kopfsache Backup');
+    if (ok){ P.lastBackup = Date.now(); save(); if (S.view === 'home') render(); }
+  },
   backupLater: () => { P.backupSnooze = Date.now() + 3 * DAY; save(); render(); },
   qEdit: d => openEditor(d.m, d.q),
   examEdit: d => openExamEditor(d.mid),
