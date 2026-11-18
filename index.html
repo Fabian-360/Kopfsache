@@ -134,7 +134,22 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .sect h2{font-size:26px;font-weight:800}
 
 /* Question */
-.qcard{background:var(--card);border-radius:28px;padding:28px;box-shadow:var(--shadow);margin-bottom:18px}
+.qcard{background:var(--card);border-radius:28px;padding:28px;box-shadow:var(--shadow);margin-bottom:18px;position:relative}
+.qedit{position:absolute;top:14px;right:14px;width:42px;height:42px;border-radius:50%;background:var(--card2);font-size:18px;display:flex;align-items:center;justify-content:center}
+.qcard:has(.qedit) .qhead{padding-right:50px}
+.edov{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.78);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top)) 14px 60px}
+body.edopen{overflow:hidden}
+.edcard{background:var(--card);border-radius:24px;padding:22px;width:min(760px,100%);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.edtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.edtop h2{margin:0;font-size:22px}.edtop .gx{position:static}
+.edl{display:block;font-weight:800;margin:14px 0 6px}.edl small{display:block;color:var(--muted);font-weight:600;font-size:13px;margin:2px 0 6px}
+.edcard textarea,.edcard .edopt{width:100%;background:var(--card2);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;font-weight:600;resize:vertical}
+.edrow{display:flex;gap:10px;align-items:center;margin-bottom:8px}.edrow .edok{width:26px;height:26px;flex:none;accent-color:#2FBF71}
+.ederr{color:#FF6B6B;font-weight:800;margin-top:12px}
+.edinfo{color:var(--muted);font-weight:700}
+.edfoot{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.btn.danger{background:#3A1414;color:#FF8A8A}
+.edli{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.edli small{display:block;color:var(--muted);font-weight:700;font-size:12px}.edli b{font-size:14px;font-weight:700}.edli .btn{flex:none}
 .qhead{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--acc);margin-bottom:8px}
 .qtext{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:clamp(23px,3.4vw,29px);font-weight:700;line-height:1.25;margin-bottom:22px}
 .qtext .not{background:var(--badbg);color:var(--bad);padding:0 6px;border-radius:6px}
@@ -385,8 +400,20 @@ function md(t, m){
 
 /* ---------- state ---------- */
 let P = normP(lsGet(LS_P));
-let S = { view:'welcome', modules: (lsGet(LS_M)||[]), semesters: (lsGet(LS_M+'.sem')||[]), sem: null, contentDate: lsGet(LS_M+'.date')||'', modId:null, lessonId:null, lq:[], test:null, filter:'all', note:null, confirmQuit:false };
-function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0, game: normGame(p.game) }; }
+let S = { view:'welcome', raw: (lsGet(LS_M)||[]), modules: [], semesters: (lsGet(LS_M+'.sem')||[]), sem: null, contentDate: lsGet(LS_M+'.date')||'', modId:null, lessonId:null, lq:[], test:null, filter:'all', note:null, confirmQuit:false };
+S.modules = applyEdits(S.raw);
+/* ---------- eigene Änderungen an Fragen (liegen getrennt vom Stoff, überleben jedes Update) ---------- */
+function applyEdits(mods){
+  const E = (P && P.edits) || {};
+  if (!Object.keys(E).length) return mods;
+  return mods.map(m => {
+    if (!(m.questions||[]).some(q => E[m.id+'::'+q.id])) return m;
+    const qs = [];
+    for (const q of m.questions){ const e = E[m.id+'::'+q.id]; if (!e){ qs.push(q); continue; } if (e.del) continue; qs.push(Object.assign({}, q, e.q || {}, { edited:true })); }
+    return Object.assign({}, m, { questions: qs });
+  });
+}
+function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, edits: p.edits && typeof p.edits==='object' ? p.edits : {}, coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0, game: normGame(p.game) }; }
 function normGame(g){ g = g && typeof g==='object' ? g : {}; const st = g.stats||{}; return { best:g.best||{}, bonus:g.bonus||{}, map: g.map||'wald', sound: g.sound !== false, stats:{ games:+st.games||0, waves:+st.waves||0, right:+st.right||0, wrong:+st.wrong||0, kills:+st.kills||0, bestStreak:+st.bestStreak||0 } }; }
 
 const mod = () => S.modules.find(m => m.id===S.modId);
@@ -772,6 +799,7 @@ function mergeP(a, b){
   const out = normP(clone(a)); b = normP(b);
   for (const k in b.q){ if (!out.q[k] || (b.q[k].t||0) > (out.q[k].t||0)) out.q[k] = b.q[k]; }
   Object.assign(out.lessons, b.lessons);
+  for (const k in b.edits){ if (!out.edits[k] || (b.edits[k].t||0) > (out.edits[k].t||0)) out.edits[k] = b.edits[k]; }
   const seen = new Set(out.tests.map(t => t.t));
   b.tests.forEach(t => { if (!seen.has(t.t)) out.tests.push(t); });
   out.tests.sort((x,y) => x.t-y.t); out.tests = out.tests.slice(-150);
@@ -801,9 +829,9 @@ async function init(){
     const j = await r.json();
     const mods = sortMods((j.modules||[]).filter(m => m && m.id));
     const count = list => list.reduce((a,m) => a + (m.questions||[]).length + (m.lessons||[]).length, 0);
-    const before = S.modules.length ? count(S.modules) : null;
-    const changed = JSON.stringify(mods) !== JSON.stringify(S.modules);
-    S.modules = mods; S.semesters = Array.isArray(j.semesters) ? j.semesters : []; lsSet(LS_M+'.sem', S.semesters); S.contentDate = j.updated || ''; lsSet(LS_M, mods); lsSet(LS_M+'.date', S.contentDate);
+    const before = S.raw.length ? count(S.raw) : null;
+    const changed = JSON.stringify(mods) !== JSON.stringify(S.raw);
+    S.raw = mods; S.modules = applyEdits(mods); S.semesters = Array.isArray(j.semesters) ? j.semesters : []; lsSet(LS_M+'.sem', S.semesters); S.contentDate = j.updated || ''; lsSet(LS_M, mods); lsSet(LS_M+'.date', S.contentDate);
     if (changed){
       if (before !== null && count(mods) > before) S.toast = '<span class="c">📚</span> Neuer Stoff da!';
       if (!S.test) render();
@@ -957,7 +985,8 @@ function qBlock(item, i, act, label, m, showFig){
   const hint = b.multi && !answered ? `<div class="mhint">Mehrere Antworten können richtig sein – alle passenden antippen, dann prüfen.</div>` : '';
   const check = b.multi && !answered ? `<button class="btn acc" style="margin-top:14px;width:100%" data-act="${act === 'tAns' ? 'tCheck' : act === 'gAns' ? 'gCheck' : 'lCheck'}" data-i="${i}" ${sel.length ? '' : 'disabled'}>Antwort prüfen</button>` : '';
   const tag = b.exam ? (b.src && /Altklausur/.test(b.src) ? ' · 📜 Altklausur' : ' · 🎓 Testfrage vom Prof') : b.original ? ' · 📝 Original-Moodle-Frage' : (b.gen ? ' · 🎲 neue Zahlen' : '');
-  return `<div class="qcard"><div class="qhead">${label}${tag}</div>${ctx}${pre}<div class="qtext">${promptHtml(b)}</div>${code}${hint}<div class="opts ${answered?'locked':''}">${opts}</div>${check}${fb}${fig}</div>`;
+  const pen = answered && item.qid && m ? `<button class="qedit" data-act="qEdit" data-m="${esc(m.id)}" data-q="${esc(item.qid)}" aria-label="Frage bearbeiten">✏️</button>` : '';
+  return `<div class="qcard">${pen}<div class="qhead">${label}${tag}</div>${ctx}${pre}<div class="qtext">${promptHtml(b)}</div>${code}${hint}<div class="opts ${answered?'locked':''}">${opts}</div>${check}${fb}${fig}</div>`;
 }
 
 function vLesson(){
@@ -1094,12 +1123,112 @@ function vSettings(){
         <label class="btn ghost">Backup laden<input type="file" accept="application/json,.json" id="restore" hidden></label>
       </div>
     </div>
+    ${vEditList()}
     <div class="setcard">
       <h3>📚 Stoff</h3>
       <p>${S.modules.length} Module · Stand ${esc(S.contentDate||'unbekannt')}. Neuer Stoff lädt automatisch, sobald du die App mit Internet öffnest.</p>
       <button class="btn ghost" data-act="reload">Jetzt nach neuem Stoff suchen</button>
     </div>
   </div>`;
+}
+
+async function shareJson(obj, name, title){
+  const blob = new Blob([JSON.stringify(obj, null, 1)], { type:'application/json' });
+  try {
+    const file = new File([blob], name, { type:'application/json' });
+    if (navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title }); return; }
+  } catch(e){ if (e && e.name==='AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+}
+function toast(html){ const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = html; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
+const rawQ = (mid, qid) => { const m = S.raw.find(x => x.id === mid); return m && (m.questions||[]).find(q => q.id === qid) || null; };
+const qTitle = q => !q ? '(Frage nicht mehr im Stoff)' : q.prompt || (q.prompts && q.prompts[0]) || (q.gen ? 'Rechenaufgabe mit Zufallszahlen' : q.id);
+function vEditList(){
+  const ks = Object.keys(P.edits).sort((a,b) => (P.edits[b].t||0) - (P.edits[a].t||0));
+  const rows = ks.map(k => { const [mid, qid] = k.split('::'), m = S.raw.find(x => x.id === mid), e = P.edits[k];
+    return `<div class="edli"><div><small>${esc(m ? m.title : mid)} · ${e.del ? '🗑️ gelöscht' : '✏️ bearbeitet'}</small><b>${esc(qTitle(rawQ(mid, qid)))}</b></div><button class="btn ghost" data-act="edUndo" data-k="${esc(k)}">${e.del ? 'Zurückholen' : 'Zurücksetzen'}</button></div>`; }).join('');
+  return `<div class="setcard"><h3>✏️ Bearbeitete & gelöschte Fragen</h3>
+    ${ks.length ? rows + `<p style="margin-top:12px">Deine Änderungen bleiben bei jedem Stoff-Update erhalten und sind im Backup enthalten. Wenn du sie mir als Datei schickst, baue ich sie fest ins Modul ein.</p><div class="btnrow"><button class="btn" data-act="edExport">Änderungen als Datei teilen</button></div>`
+      : '<p>Noch keine. Nach dem Beantworten einer Frage findest du oben rechts den ✏️ – damit kannst du sie bearbeiten oder löschen.</p>'}</div>`;
+}
+/* ---------- Fragen-Editor ---------- */
+let ED = null;
+function openEditor(mid, qid){
+  const m = S.modules.find(x => x.id === mid), cur = m && (m.questions||[]).find(q => q.id === qid);
+  if (!cur){ toast('<span class="c">⚠️</span> Frage nicht gefunden'); return; }
+  ED = { mid, qid, cur, confirmDel:false, err:'' };
+  renderEditor();
+}
+const edLines = v => String(v||'').split('\n').map(x => x.trim()).filter(Boolean);
+function renderEditor(){
+  let el = document.getElementById('qed');
+  if (!ED){ if (el) el.remove(); document.body.classList.remove('edopen'); return; }
+  if (!el){ el = document.createElement('div'); el.id = 'qed'; el.className = 'edov'; document.body.appendChild(el); el.addEventListener('click', edClick); }
+  document.body.classList.add('edopen');
+  const q = ED.cur, key = ED.mid + '::' + ED.qid, edited = !!P.edits[key];
+  const ta = (id, label, val, rows, hint) => `<label class="edl">${label}${hint ? `<small>${hint}</small>` : ''}<textarea id="${id}" rows="${rows}">${esc(val)}</textarea></label>`;
+  let body = '';
+  if (Array.isArray(q.options) && Array.isArray(q.answers)){
+    const opts = q.options.concat(['', '']);
+    body = ta('edPrompt', 'Frage', q.prompt || '', 3) +
+      `<div class="edl">Antworten<small>Haken = richtig. Leere Zeilen werden ignoriert.${q.exam ? ' Das ist eine Originalfrage – am besten nur Fehler korrigieren.' : ''}</small>
+        ${opts.map((o, i) => `<div class="edrow"><input type="checkbox" class="edok" ${q.answers.includes(i) ? 'checked' : ''}><input class="edopt" value="${esc(o)}" placeholder="Antwort ${i+1}"></div>`).join('')}</div>` +
+      ta('edExpl', 'Erklärung', q.explain || '', 3);
+  } else if (q.gen){
+    body = `<p class="edinfo">🎲 Diese Aufgabe wird jedes Mal mit neuen Zufallszahlen erzeugt. Du kannst sie nur löschen.</p>`;
+  } else {
+    body = ta('edPrompts', 'Frage', (q.prompts||[]).join('\n'), 3, 'Mehrere Zeilen = verschiedene Formulierungen derselben Frage, die App wählt zufällig eine.') +
+      ta('edCorrect', 'Richtige Antwort(en)', (q.correct||[]).join('\n'), 3, 'Eine pro Zeile – die App zeigt jeweils eine davon.') +
+      ta('edWrong', 'Falsche Antworten', (q.wrong||[]).join('\n'), 5, 'Eine pro Zeile, mindestens 3 – die App wählt jeweils 3 aus.') +
+      ta('edExpl', 'Erklärung', q.explain || '', 3);
+  }
+  el.innerHTML = `<div class="edcard">
+    <div class="edtop"><h2>✏️ Frage bearbeiten</h2><button class="gx" data-ed="close">✕</button></div>
+    ${body}
+    ${ED.err ? `<div class="ederr">${esc(ED.err)}</div>` : ''}
+    <div class="btnrow" style="margin-top:16px">${q.gen ? '' : '<button class="btn acc" data-ed="save">Speichern</button>'}<button class="btn ghost" data-ed="close">Abbrechen</button></div>
+    <div class="edfoot">
+      ${edited && !P.edits[key].del ? '<button class="btn ghost" data-ed="reset">↩️ Original wiederherstellen</button>' : ''}
+      <button class="btn danger" data-ed="del">${ED.confirmDel ? '🗑️ Wirklich löschen?' : '🗑️ Frage löschen'}</button>
+    </div>
+  </div>`;
+}
+function edCommit(entry, msg){
+  const key = ED.mid + '::' + ED.qid;
+  if (entry) P.edits[key] = Object.assign({ t: Date.now() }, entry); else delete P.edits[key];
+  save(); S.modules = applyEdits(S.raw); ED = null; renderEditor(); toast(msg);
+  if (S.view === 'settings' || S.view === 'module' || S.view === 'stack') render();
+}
+function edClick(ev){
+  const b = ev.target.closest('[data-ed]');
+  if (!b){ if (ev.target.id === 'qed'){ ED = null; renderEditor(); } return; }
+  const act = b.dataset.ed, q = ED.cur, val = id => (document.getElementById(id) || {}).value || '';
+  if (act === 'close'){ ED = null; renderEditor(); return; }
+  if (act === 'reset'){ edCommit(null, '<span class="c">↩️</span> Original wiederhergestellt'); return; }
+  if (act === 'del'){
+    if (!ED.confirmDel){ ED.confirmDel = true; renderEditor(); return; }
+    edCommit({ del:true }, '<span class="c">🗑️</span> Frage gelöscht'); return;
+  }
+  if (act === 'save'){
+    let nq;
+    if (Array.isArray(q.options) && Array.isArray(q.answers)){
+      const rows = [...document.querySelectorAll('#qed .edrow')].map(r => ({ t: r.querySelector('.edopt').value.trim(), ok: r.querySelector('.edok').checked })).filter(r => r.t);
+      const prompt = val('edPrompt').trim();
+      if (!prompt) ED.err = 'Bitte einen Fragetext eingeben.';
+      else if (rows.length < 2) ED.err = 'Mindestens 2 Antworten nötig.';
+      else if (!rows.some(r => r.ok)) ED.err = 'Mindestens eine Antwort als richtig ankreuzen.';
+      else { const answers = rows.map((r,i) => r.ok ? i : -1).filter(i => i >= 0); nq = { prompt, options: rows.map(r => r.t), answers, multi: answers.length > 1 || !!q.multi, explain: val('edExpl').trim() }; }
+    } else {
+      const prompts = edLines(val('edPrompts')), correct = edLines(val('edCorrect')), wrong = edLines(val('edWrong'));
+      if (!prompts.length) ED.err = 'Bitte einen Fragetext eingeben.';
+      else if (!correct.length) ED.err = 'Mindestens eine richtige Antwort nötig.';
+      else if (wrong.length < 3) ED.err = 'Mindestens 3 falsche Antworten nötig.';
+      else if (correct.some(c => wrong.includes(c))) ED.err = 'Eine Antwort steht gleichzeitig bei richtig und falsch.';
+      else { nq = { prompts, correct, wrong, explain: val('edExpl').trim() }; if (correct.length < 3) nq.notPrompts = []; }
+    }
+    if (!nq){ renderEditor(); return; }
+    edCommit({ q: nq }, '<span class="c">✏️</span> Gespeichert – gilt ab der nächsten Abfrage');
+  }
 }
 
 function render(){
@@ -1191,14 +1320,12 @@ const A = {
   settings: () => go('settings'),
   sem: d => { setSem(+d.n); render(); },
   reload: () => { location.reload(); },
-  backup: async () => {
-    const name = 'kopfsache-backup-' + fmtDay(new Date()) + '.json';
-    const blob = new Blob([JSON.stringify(P)], { type:'application/json' });
-    try {
-      const file = new File([blob], name, { type:'application/json' });
-      if (navigator.canShare && navigator.canShare({ files:[file] })){ await navigator.share({ files:[file], title:'Kopfsache Backup' }); return; }
-    } catch(e){ if (e && e.name==='AbortError') return; }
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  backup: () => shareJson(P, 'kopfsache-backup-' + fmtDay(new Date()) + '.json', 'Kopfsache Backup'),
+  qEdit: d => openEditor(d.m, d.q),
+  edUndo: d => { delete P.edits[d.k]; save(); S.modules = applyEdits(S.raw); toast('<span class="c">↩️</span> Original wiederhergestellt'); render(); },
+  edExport: () => {
+    const list = Object.entries(P.edits).map(([k, e]) => { const [mid, qid] = k.split('::'); return { modul: mid, frage: qid, geloescht: !!e.del, neu: e.q || null, original: rawQ(mid, qid) }; });
+    shareJson({ exportiert: new Date().toISOString(), aenderungen: list }, 'kopfsache-aenderungen-' + fmtDay(new Date()) + '.json', 'Kopfsache Änderungen');
   },
   stack: d => { S.stack = d.k; go('stack'); },
   game: () => { S.gameMod = null; S.test = null; go('game'); },
@@ -1937,7 +2064,7 @@ app.addEventListener('change', e => {
   const fr = new FileReader();
   fr.onload = () => {
     try { const data = JSON.parse(fr.result); if (!data || typeof data.q !== 'object') throw 0;
-      P = mergeP(normP(data), P); save(); S.toast = '<span class="c">✅</span> Backup geladen!'; render();
+      P = mergeP(normP(data), P); save(); S.modules = applyEdits(S.raw); S.toast = '<span class="c">✅</span> Backup geladen!'; render();
     } catch(err){ S.toast = '<span class="c">⚠️</span> Datei ist kein Backup'; render(); }
   };
   fr.readAsText(e.target.files[0]);
