@@ -76,6 +76,24 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .subjgrp .grid{height:100%}
 .mcard{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);text-align:left;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;transition:transform .15s}
 .mcard:active{transform:scale(.98)}
+.mcard{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mtop{display:flex;align-items:center;gap:12px}
+.calw{position:relative;display:flex;align-items:center;gap:10px;margin-left:auto;padding:4px 6px 4px 4px;border-radius:14px;cursor:pointer}
+.calw:active{background:rgba(255,255,255,.05)}
+.cal{width:52px;border-radius:12px;overflow:hidden;background:#fff;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.35);flex:none;line-height:1}
+.cal i{display:block;background:var(--acc);color:#fff;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 0}
+.cal b{display:block;color:#111;font-size:24px;font-weight:800;padding:5px 0 6px}
+.cd{font-weight:800;font-size:15px;color:var(--ink);line-height:1.15;text-align:right}.cd small{display:block;color:var(--muted);font-size:11px;font-weight:700}
+.cd.hot{color:var(--acc)}
+.examdate{position:absolute;inset:0;width:100%;height:100%;opacity:0;-webkit-appearance:none;appearance:none;border:0;cursor:pointer}
+.mdue{color:var(--gold)}
+.duebar{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:16px 20px;margin:0 0 18px;border-radius:var(--r);background:#000;border:2px solid var(--acc);color:var(--ink)}
+.duebar.ok{border-color:var(--line);background:var(--card)}
+.duebar .di{font-size:30px}.duebar .dt{flex:1;font-weight:800;font-size:18px}.duebar .dt small{display:block;color:var(--muted);font-size:13px;font-weight:700}
+.duebar .dgo{background:var(--acc);color:#fff;border-radius:999px;padding:9px 16px;font-weight:800;font-size:15px;white-space:nowrap}
+.nag{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#000;border:2px solid var(--gold);border-radius:var(--r);padding:14px 18px;margin:0 0 22px}
+.nag .ni{font-size:28px}.nag .nt{flex:1;min-width:220px;font-weight:800}.nag .nt small{display:block;color:var(--muted);font-weight:700;font-size:13px}
+#updbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom));z-index:90;background:var(--acc);color:#fff;border-radius:999px;padding:14px 22px;font-weight:700;font-size:16px;box-shadow:0 12px 40px rgba(0,0,0,.6);white-space:nowrap}
 .mcard::before{content:"";position:absolute;inset:0 0 auto 0;height:12px;background:var(--acc)}
 .memo{width:56px;height:56px;border-radius:18px;background:var(--accsoft);display:grid;place-items:center;font-size:30px}
 .mcard h2{font-size:24px;font-weight:700}
@@ -382,7 +400,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '27';
+const APP_VERSION = '28';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -450,7 +468,7 @@ function applyEdits(mods){
     return Object.assign({}, m, { questions: qs });
   });
 }
-function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, edits: p.edits && typeof p.edits==='object' ? p.edits : {}, coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0, game: normGame(p.game) }; }
+function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, exams: p.exams && typeof p.exams==='object' ? p.exams : {}, lastBackup:+p.lastBackup||0, backupSnooze:+p.backupSnooze||0, edits: p.edits && typeof p.edits==='object' ? p.edits : {}, coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0, game: normGame(p.game) }; }
 function normGame(g){ g = g && typeof g==='object' ? g : {}; const st = g.stats||{}; return { best:g.best||{}, bonus:g.bonus||{}, saves: g.saves && typeof g.saves==='object' ? g.saves : {}, map: g.map||'wald', sound: g.sound !== false, stats:{ games:+st.games||0, waves:+st.waves||0, right:+st.right||0, wrong:+st.wrong||0, kills:+st.kills||0, bestStreak:+st.bestStreak||0 } }; }
 
 const mod = () => S.modules.find(m => m.id===S.modId);
@@ -463,9 +481,19 @@ function stats(m){
   const pc = x => n ? Math.round(x/n*100) : 0;
   return { n, ok, bad, open, pOk:pc(ok), pBad:pc(bad), pOpen: n ? 100-pc(ok)-pc(bad) : 0 };
 }
+/* ---------- Wiederholen mit Abständen (Lernkartei): richtig → Kasten hoch, falsch → zurück auf Kasten 0 ---------- */
+const DAY = 864e5, SR_DAYS = [0, 1, 3, 7, 16, 35];
+function srBox(e){ return e.b != null ? e.b : (e.last === 'r' ? 1 : 0); }
+function srDue(e){ if (e.due != null) return e.due; return (e.t||0) + SR_DAYS[srBox(e)] * DAY; }
+const endOfToday = () => { const d = new Date(); d.setHours(23,59,59,999); return d.getTime(); };
+const isDue = (m,q) => { const e = P.q[key(m,q)]; return !!e && srDue(e) <= endOfToday(); };
+const dueQs = m => (m.questions||[]).filter(q => isDue(m,q));
+function nextDueDay(m){ let t = Infinity; for (const q of (m.questions||[])){ const e = P.q[key(m,q)]; if (e){ const d = srDue(e); if (d > endOfToday() && d < t) t = d; } } return t === Infinity ? 0 : t; }
 function record(m,q,ok){
   const k = key(m,q), e = P.q[k] || {r:0,w:0};
   if (ok) e.r++; else e.w++;
+  const box = ok ? Math.min(SR_DAYS.length - 1, (e.b != null ? e.b : (e.last === 'r' ? 1 : 0)) + 1) : 0;
+  e.b = box; e.due = Date.now() + SR_DAYS[box] * DAY;
   e.last = ok ? 'r' : 'w'; e.t = Date.now();
   P.q[k] = e;
   const d = fmtDay(new Date()); P.days[d] = (P.days[d]||0)+1;
@@ -805,14 +833,15 @@ function selectQs(m, mode, n){
   if (mode==='wrong') return shuffle(qs.filter(q => st(q)==='w')).slice(0,n);
   if (mode==='open')  return shuffle(qs.filter(q => !st(q))).slice(0,n);
   if (mode==='right') return shuffle(qs.filter(q => st(q)==='r')).slice(0,n);
+  const byDue = arr => arr.map(q => ({ q, t: srDue(P.q[key(m,q)]) + Math.random()*36e5*6 })).sort((a,b) => a.t-b.t).map(x => x.q);
+  if (mode==='due') return shuffle(byDue(qs.filter(q => isDue(m,q))).slice(0,n));
   const wrong = shuffle(qs.filter(q => st(q)==='w'));
   const open  = shuffle(qs.filter(q => !st(q)));
-  const right = qs.filter(q => st(q)==='r')
-    .map(q => ({q, t:(P.q[key(m,q)].t||0) + Math.random()*36e5*12}))
-    .sort((a,b) => a.t-b.t).map(x => x.q);
+  const dueRight = byDue(qs.filter(q => st(q)==='r' && isDue(m,q)));
+  const right = byDue(qs.filter(q => st(q)==='r' && !isDue(m,q)));
   const want = Math.min(wrong.length, Math.ceil(n*0.4));
   const out = wrong.slice(0,want);
-  for (const arr of [open, right, wrong.slice(want)]) for (const q of arr){ if (out.length>=n) break; out.push(q); }
+  for (const arr of [dueRight, open, right, wrong.slice(want)]) for (const q of arr){ if (out.length>=n) break; out.push(q); }
   return shuffle(out);
 }
 function promptHtml(b){
@@ -836,6 +865,7 @@ function mergeP(a, b){
   const out = normP(clone(a)); b = normP(b);
   for (const k in b.q){ if (!out.q[k] || (b.q[k].t||0) > (out.q[k].t||0)) out.q[k] = b.q[k]; }
   Object.assign(out.lessons, b.lessons);
+  Object.assign(out.exams, b.exams); out.lastBackup = Math.max(out.lastBackup||0, b.lastBackup||0);
   for (const k in b.edits){ if (!out.edits[k] || (b.edits[k].t||0) > (out.edits[k].t||0)) out.edits[k] = b.edits[k]; }
   const seen = new Set(out.tests.map(t => t.t));
   b.tests.forEach(t => { if (!seen.has(t.t)) out.tests.push(t); });
@@ -857,8 +887,11 @@ async function init(){
     navigator.serviceWorker.register('sw.js').then(reg => {
       reg.addEventListener('updatefound', () => {
         const w = reg.installing; if (!w) return;
-        w.addEventListener('statechange', () => { if (w.state==='installed' && navigator.serviceWorker.controller) S.updateReady = true; });
+        w.addEventListener('statechange', () => { if (w.state==='installed' && navigator.serviceWorker.controller){ S.updateReady = true; showUpdateBanner(); } });
       });
+      // beim Zurückkehren in die App nach einer neuen Version schauen
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+      setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
     }).catch(() => {});
   }
   try {
@@ -925,15 +958,27 @@ function curSem(){
   return S.sem;
 }
 function setSem(n){ S.sem = n; const list = semList(); try { localStorage.setItem('kopfsache.sem', JSON.stringify({ sel:n, newest: list.length ? list[list.length-1].n : n })); } catch(e){} }
+const examDateOf = m => P.exams[m.id] || (m.examDate ? String(m.examDate).slice(0,10) : '');
+function examCal(m){
+  const ds = examDateOf(m), MON = ['JAN','FEB','MÄR','APR','MAI','JUN','JUL','AUG','SEP','OKT','NOV','DEZ'];
+  let head = 'DATUM', day = '?', cd = 'Prüfung eintragen';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(ds)){
+    const [y,mo,d] = ds.split('-').map(Number), ex = new Date(y, mo-1, d), t = new Date(); t.setHours(0,0,0,0);
+    const n = Math.round((ex - t) / DAY);
+    head = MON[mo-1]; day = d;
+    cd = n > 1 ? `noch ${n} Tage` : n === 1 ? 'morgen!' : n === 0 ? 'heute!' : 'vorbei';
+  }
+  return `<label class="calw" aria-label="Prüfungsdatum ändern"><span class="cal"><i>${head}</i><b>${day}</b></span><span class="cd${/Tage|vorbei|eintragen/.test(cd) ? '' : ' hot'}">${cd}<small>${!ds ? 'zum Eintragen antippen' : m.examInfo && !P.exams[m.id] ? esc(m.examInfo) : 'Prüfung'}</small></span><input type="date" class="examdate" data-mid="${esc(m.id)}" value="${esc(ds)}"></label>`;
+}
 function modCard(m){
-  const st = stats(m), last = P.tests.filter(t => t.m===m.id && t.mode==='mix').slice(-1)[0];
-  return `<button class="mcard fade" style="${accStyle(m)}" data-act="openMod" data-id="${esc(m.id)}">
-      <div class="memo">${esc(m.emoji||'📘')}</div>
+  const st = stats(m), last = P.tests.filter(t => t.m===m.id && t.mode==='mix').slice(-1)[0], nd = dueQs(m).length;
+  return `<div class="mcard fade" role="button" tabindex="0" style="${accStyle(m)}" data-act="openMod" data-id="${esc(m.id)}">
+      <div class="mtop"><div class="memo">${esc(m.emoji||'📘')}</div>${examCal(m)}</div>
       <h2>${esc(m.title)}</h2>
       ${m.subtitle ? `<p>${esc(m.subtitle)}</p>` : ''}
       <div class="bar"><i style="width:${st.pOk}%;background:var(--ok)"></i><i style="width:${st.pBad}%;background:var(--bad)"></i></div>
-      <div class="meta"><span>📖 ${(m.lessons||[]).length} Texte</span><span>❓ ${st.n} Fragen</span>${last?`<span>🎯 ${last.p}%</span>`:''}</div>
-    </button>`;
+      <div class="meta"><span>📖 ${(m.lessons||[]).length} Texte</span><span>❓ ${st.n} Fragen</span>${nd ? `<span class="mdue">🔁 ${nd} fällig</span>` : ''}${last?`<span>🎯 ${last.p}%</span>`:''}</div>
+    </div>`;
 }
 function vHome(){
   const sem = curSem(), list = semList(), newest = list.length ? list[list.length-1].n : 1;
@@ -965,6 +1010,7 @@ function vHome(){
       </div>
     </div>
     ${noteHtml()}
+    ${backupNag()}
     ${mods.length ? grouped : `<div class="empty"><b>Noch keine Module in diesem Semester</b>Schick Claude deinen Stoff – er erscheint dann beim nächsten Öffnen mit Internet hier.</div>`}
   </div>`;
 }
@@ -979,6 +1025,9 @@ function vModule(){
   return `<div class="wrap fade" style="${accStyle(m)}">
     <div class="top">${backBtn('home','Module')}<span class="spacer"></span>${coinPill()}</div>
     <div class="hero"><div class="memo">${esc(m.emoji||'📘')}</div><div><h1>${esc(m.title)}</h1>${m.subtitle?`<p>${esc(m.subtitle)}</p>`:''}</div></div>
+    ${(() => { if (noQ) return ''; const nd = dueQs(m).length, nx = nextDueDay(m);
+      if (nd) return `<button class="duebar" data-act="test" data-mode="due"><span class="di">🔁</span><span class="dt">Heute fällig: ${nd} ${nd === 1 ? 'Frage' : 'Fragen'}<small>Wiederhole sie jetzt, bevor du sie vergisst</small></span><span class="dgo">Jetzt wiederholen</span></button>`;
+      return `<div class="duebar ok"><span class="di">✅</span><span class="dt">Nichts fällig<small>${nx ? 'Nächste Wiederholung ' + relDay(nx) : 'Beantworte Fragen, dann plant die App die Wiederholungen'}</small></span></div>`; })()}
     <div class="tiles${ex.length ? ' four' : ''}">
       <button class="tile" data-act="learn"><span class="ic">📖</span><h3>Lernen</h3><span>${read} von ${ls.length} Texten gelesen</span></button>
       <button class="tile" data-act="test" data-mode="mix" ${noQ?'disabled style="opacity:.5"':''}><span class="ic">🎯</span><h3>Test</h3><span>${last ? 'Zuletzt '+last.p+' % richtig' : noQ ? 'Noch keine Fragen' : 'Noch kein Test gemacht'}</span></button>
@@ -990,6 +1039,18 @@ function vModule(){
   </div>`;
 }
 
+function relDay(t){
+  const a = new Date(); a.setHours(0,0,0,0); const b = new Date(t); b.setHours(0,0,0,0);
+  const n = Math.round((b - a) / DAY);
+  return n <= 0 ? 'heute' : n === 1 ? 'morgen' : n === 2 ? 'übermorgen' : 'in ' + n + ' Tagen';
+}
+function backupNag(){
+  const n = Object.keys(P.q).length, now = Date.now();
+  if (n < 20 || now < (P.backupSnooze||0)) return '';
+  const age = P.lastBackup ? Math.floor((now - P.lastBackup) / DAY) : null;
+  if (age !== null && age < 7) return '';
+  return `<div class="nag"><span class="ni">💾</span><span class="nt">${age === null ? 'Du hast noch kein Backup gemacht' : 'Dein letztes Backup ist ' + age + ' Tage her'}<small>${n} beantwortete Fragen, Spielstände und Änderungen liegen nur auf diesem iPad.</small></span><button class="btn acc" data-act="backup">Jetzt sichern</button><button class="btn ghost" data-act="backupLater">Später</button></div>`;
+}
 function vLearn(){
   const m = mod(); if (!m) return vHome();
   const ls = m.lessons||[];
@@ -1062,7 +1123,7 @@ function vTest(){
   const answered = it.ok !== undefined;
   const dots = T.items.map((x,i) => `<i class="${x.ok === undefined ? '' : (x.ok ? 'ok' : 'bad')} ${i===T.idx?'cur':''}"></i>`).join('');
   const coinUi = '';
-  const modeLabel = T.mode==='exam' ? 'Prüfungssimulation' : T.mode==='examWrong' ? 'Prüfung · Fehler' : T.mode==='wrong' ? 'Fehler-Training' : T.mode==='open' ? 'Neue Fragen' : T.mode==='right' ? 'Wiederholen' : 'Test';
+  const modeLabel = T.mode==='exam' ? 'Prüfungssimulation' : T.mode==='examWrong' ? 'Prüfung · Fehler' : T.mode==='wrong' ? 'Fehler-Training' : T.mode==='open' ? 'Neue Fragen' : T.mode==='right' ? 'Wiederholen' : T.mode==='due' ? 'Fällige Wiederholung' : 'Test';
   const clock = T.limit ? `<span class="pill clock" id="examclock">⏱ ${fmtMs(T.limit - (Date.now()-T.t0))}</span>` : '';
   return `<div class="wrap fade" style="${accStyle(m)}">
     <div class="top">
@@ -1093,6 +1154,7 @@ function vResult(){
     <div class="btnrow" style="justify-content:center">
       ${T.exam ? `<button class="btn acc" data-act="test" data-mode="exam">Neue Simulation</button>
       ${wrong.length ? `<button class="btn ghost" data-act="test" data-mode="examWrong">Nur Fehler wiederholen</button>` : ''}`
+      : T.mode === 'due' ? `${dueQs(m).length ? `<button class="btn acc" data-act="test" data-mode="due">Weiter wiederholen (${dueQs(m).length})</button>` : ''}<button class="btn ${dueQs(m).length ? 'ghost' : 'acc'}" data-act="test" data-mode="mix">Normaler Test</button>`
       : `<button class="btn acc" data-act="test" data-mode="mix">Neuer Test</button>
       ${wrong.length ? `<button class="btn ghost" data-act="test" data-mode="wrong">Fehler üben</button>` : ''}`}
       <button class="btn ghost" data-act="openMod" data-id="${esc(m.id)}">Zum Modul</button>
@@ -1182,6 +1244,16 @@ function vSettings(){
   </div>`;
 }
 
+function showUpdateBanner(){
+  if (document.getElementById('updbar')) return;
+  const b = document.createElement('button'); b.id = 'updbar';
+  b.innerHTML = '✨ Neue Version da – <b>tippen zum Aktualisieren</b>';
+  b.addEventListener('click', () => {
+    if (S.play && !S.play.over && typeof gameSave === 'function') gameSave(S.play);
+    location.reload();
+  });
+  document.body.appendChild(b);
+}
 async function shareJson(obj, name, title){
   const blob = new Blob([JSON.stringify(obj, null, 1)], { type:'application/json' });
   try {
@@ -1360,7 +1432,7 @@ function startExamClock(){
 function startTest(mode){
   const m = mod(); if (!m) return;
   const exam = mode==='exam' || mode==='examWrong';
-  const qs = selectQs(m, mode, exam ? 30 : 10); if (!qs.length) return;
+  const qs = selectQs(m, mode, exam ? 30 : mode === 'due' ? 20 : 10); if (!qs.length) return;
   S.test = { modId:m.id, mode, exam, items: qs.map(q => ({ qid:q.id, b:buildQ(q, m), chosen:null, sel:[] })), idx:0, saved:false, t0:Date.now(), limit: exam ? qs.length*60000 : 0 };
   go('test');
   startExamClock();
@@ -1390,7 +1462,8 @@ const A = {
   settings: () => go('settings'),
   sem: d => { setSem(+d.n); render(); },
   reload: () => { location.reload(); },
-  backup: () => shareJson(P, 'kopfsache-backup-' + fmtDay(new Date()) + '.json', 'Kopfsache Backup'),
+  backup: () => { P.lastBackup = Date.now(); save(); if (S.view === 'home') render(); return shareJson(P, 'kopfsache-backup-' + fmtDay(new Date()) + '.json', 'Kopfsache Backup'); },
+  backupLater: () => { P.backupSnooze = Date.now() + 3 * DAY; save(); render(); },
   qEdit: d => openEditor(d.m, d.q),
   edUndo: d => { delete P.edits[d.k]; save(); S.modules = applyEdits(S.raw); toast('<span class="c">↩️</span> Original wiederhergestellt'); render(); },
   edExport: () => {
@@ -1552,8 +1625,9 @@ function gamePickQuestion(G){
   const m = G.m, qs = (m.questions||[]).filter(q => !G.used.has(q.id));
   const pool = qs.length ? qs : (m.questions||[]);
   if (!qs.length) G.used.clear();
-  const red = pool.filter(q => status(m,q) === 'w');
-  const q = (red.length && Math.random() < GCFG.repeatShare) ? rand(red) : rand(pool);
+  const red = pool.filter(q => status(m,q) === 'w'), due = pool.filter(q => status(m,q) === 'r' && isDue(m,q));
+  const r0 = Math.random();
+  const q = (red.length && r0 < GCFG.repeatShare) ? rand(red) : (due.length && r0 < GCFG.repeatShare + 0.3) ? rand(due) : rand(pool);
   G.used.add(q.id);
   const e = P.q[key(m,q)] || { r:0, w:0 };
   const repeat = e.last === 'w' && (e.w||0) >= 2 && !P.game.bonus[key(m,q)];
@@ -2178,6 +2252,11 @@ Object.assign(A, {
 });
 
 app.addEventListener('change', e => {
+  if (e.target.classList.contains('examdate')){
+    const mid = e.target.dataset.mid, v = e.target.value;
+    if (v) P.exams[mid] = v; else delete P.exams[mid];
+    save(); render(); return;
+  }
   if (e.target.id !== 'restore' || !e.target.files[0]) return;
   const fr = new FileReader();
   fr.onload = () => {
@@ -2188,6 +2267,7 @@ app.addEventListener('change', e => {
   fr.readAsText(e.target.files[0]);
 });
 app.addEventListener('click', e => {
+  if (e.target.closest('.calw')) return;   // Kalender: öffnet nur die Datumsauswahl
   const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
   const f = A[el.dataset.act]; if (f) f(el.dataset);
 });
