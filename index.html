@@ -45,6 +45,7 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .logo{width:clamp(64px,12vh,110px);height:clamp(64px,12vh,110px);font-size:clamp(34px,6.5vh,56px) !important;border-radius:30%;background:var(--acc);display:grid;place-items:center;transform:rotate(-6deg);box-shadow:0 18px 50px rgba(225,6,0,.45);margin-bottom:clamp(14px,3vh,28px);animation:bob 4s ease-in-out infinite}
 @keyframes bob{50%{transform:rotate(-2deg) translateY(-6px)}}
 .logo img{width:100%;height:100%;display:block}
+.welcome .ver{position:absolute!important;bottom:calc(64px + env(safe-area-inset-bottom));left:0;right:0;font-size:12px;font-weight:700;color:#55545C}
 .welcome h1{margin-bottom:clamp(18px,4vh,36px)}
 .hello{font-weight:800;color:var(--muted);font-size:20px;margin:0 0 6px}
 .welcome h1{font-size:clamp(44px,min(10vw,9vh),92px);font-weight:800;line-height:.95}
@@ -358,6 +359,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
+const APP_VERSION = '22';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -881,6 +883,7 @@ function vWelcome(){
       <div class="chip"><b>🏰 ${bestWaveAll()}</b><span>Beste Welle</span></div>
     </div>
     <button class="btn big" data-act="home">Los geht's</button>
+    <div class="ver">Version ${APP_VERSION}</div>
   </div>`;
 }
 
@@ -1140,7 +1143,7 @@ function vSettings(){
     ${vEditList()}
     <div class="setcard">
       <h3>📚 Stoff</h3>
-      <p>${S.modules.length} Module · Stand ${esc(S.contentDate||'unbekannt')}. Neuer Stoff lädt automatisch, sobald du die App mit Internet öffnest.</p>
+      <p>App-Version ${APP_VERSION} · ${S.modules.length} Module · Stand ${esc(S.contentDate||'unbekannt')}. Neuer Stoff lädt automatisch, sobald du die App mit Internet öffnest.</p>
       <button class="btn ghost" data-act="reload">Jetzt nach neuem Stoff suchen</button>
     </div>
   </div>`;
