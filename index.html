@@ -180,6 +180,11 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .qrow small{color:var(--muted);font-weight:700;font-size:13px;white-space:nowrap}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
 :root{--gold:#FFC83D}
+.semchips{display:flex;gap:10px;overflow-x:auto;margin:6px 0 16px;padding-bottom:4px}
+.semchip{flex:none;background:var(--card);border-radius:16px;padding:10px 16px;font-weight:800;font-size:15px;text-align:left;box-shadow:var(--shadow);border:2px solid transparent}
+.semchip small{display:block;font-size:12px;color:var(--muted);font-weight:700}
+.semchip.on{border-color:var(--acc);background:#2A1212}
+.subj{font-size:20px;margin:22px 0 12px;color:var(--ink)}
 .gwrap{max-width:1100px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 12px calc(20px + env(safe-area-inset-bottom))}
 .gtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .ghud{flex:1;display:flex;gap:8px;flex-wrap:wrap}
@@ -342,7 +347,7 @@ function md(t, m){
 
 /* ---------- state ---------- */
 let P = normP(lsGet(LS_P));
-let S = { view:'welcome', modules: (lsGet(LS_M)||[]), contentDate: lsGet(LS_M+'.date')||'', modId:null, lessonId:null, lq:[], test:null, filter:'all', note:null, confirmQuit:false };
+let S = { view:'welcome', modules: (lsGet(LS_M)||[]), semesters: (lsGet(LS_M+'.sem')||[]), sem: null, contentDate: lsGet(LS_M+'.date')||'', modId:null, lessonId:null, lq:[], test:null, filter:'all', note:null, confirmQuit:false };
 function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0, game: normGame(p.game) }; }
 function normGame(g){ g = g && typeof g==='object' ? g : {}; const st = g.stats||{}; return { best:g.best||{}, bonus:g.bonus||{}, stats:{ games:+st.games||0, waves:+st.waves||0, right:+st.right||0, wrong:+st.wrong||0, kills:+st.kills||0, bestStreak:+st.bestStreak||0 } }; }
 
@@ -752,7 +757,7 @@ async function init(){
     const count = list => list.reduce((a,m) => a + (m.questions||[]).length + (m.lessons||[]).length, 0);
     const before = S.modules.length ? count(S.modules) : null;
     const changed = JSON.stringify(mods) !== JSON.stringify(S.modules);
-    S.modules = mods; S.contentDate = j.updated || ''; lsSet(LS_M, mods); lsSet(LS_M+'.date', S.contentDate);
+    S.modules = mods; S.semesters = Array.isArray(j.semesters) ? j.semesters : []; lsSet(LS_M+'.sem', S.semesters); S.contentDate = j.updated || ''; lsSet(LS_M, mods); lsSet(LS_M+'.date', S.contentDate);
     if (changed){
       if (before !== null && count(mods) > before) S.toast = '<span class="c">📚</span> Neuer Stoff da!';
       if (!S.test) render();
@@ -795,24 +800,48 @@ function vWelcome(){
   </div>`;
 }
 
-function vHome(){
-  const cards = S.modules.map(m => {
-    const st = stats(m), last = P.tests.filter(t => t.m===m.id && t.mode==='mix').slice(-1)[0];
-    return `<button class="mcard fade" style="${accStyle(m)}" data-act="openMod" data-id="${esc(m.id)}">
+/* ---------- Semester ---------- */
+const modSem = m => +m.semester || 1;
+function semList(){
+  const ns = new Set(S.modules.map(modSem)); (S.semesters||[]).forEach(x => ns.add(+x.n));
+  return [...ns].sort((a,b) => a-b).map(n => { const d = (S.semesters||[]).find(x => +x.n === n) || {}; return { n, label: d.label || n + '. Semester', term: d.term || '' }; });
+}
+function curSem(){
+  const list = semList(); if (!list.length) return 1;
+  const newest = list[list.length-1].n;
+  let saved = null; try { saved = JSON.parse(localStorage.getItem('kopfsache.sem')); } catch(e){}
+  if (!saved || saved.newest !== newest){ saved = { sel: newest, newest }; try { localStorage.setItem('kopfsache.sem', JSON.stringify(saved)); } catch(e){} }
+  if (S.sem === null) S.sem = list.some(x => x.n === saved.sel) ? saved.sel : newest;
+  return S.sem;
+}
+function setSem(n){ S.sem = n; const list = semList(); try { localStorage.setItem('kopfsache.sem', JSON.stringify({ sel:n, newest: list.length ? list[list.length-1].n : n })); } catch(e){} }
+function modCard(m){
+  const st = stats(m), last = P.tests.filter(t => t.m===m.id && t.mode==='mix').slice(-1)[0];
+  return `<button class="mcard fade" style="${accStyle(m)}" data-act="openMod" data-id="${esc(m.id)}">
       <div class="memo">${esc(m.emoji||'📘')}</div>
       <h2>${esc(m.title)}</h2>
       ${m.subtitle ? `<p>${esc(m.subtitle)}</p>` : ''}
       <div class="bar"><i style="width:${st.pOk}%;background:var(--ok)"></i><i style="width:${st.pBad}%;background:var(--bad)"></i></div>
       <div class="meta"><span>📖 ${(m.lessons||[]).length} Texte</span><span>❓ ${st.n} Fragen</span>${last?`<span>🎯 ${last.p}%</span>`:''}</div>
     </button>`;
+}
+function vHome(){
+  const sem = curSem(), list = semList(), newest = list.length ? list[list.length-1].n : 1;
+  const mods = S.modules.filter(m => modSem(m) === sem);
+  const subjects = [...new Set(mods.map(m => m.subject || ''))];
+  const grouped = subjects.map(sub => {
+    const ms = mods.filter(m => (m.subject || '') === sub);
+    return (subjects.length > 1 || sub ? `<h3 class="subj">${esc(sub || 'Weitere Module')}</h3>` : '') + `<div class="grid">${ms.map(modCard).join('')}</div>`;
   }).join('');
+  const chips = list.length > 1 || (list[0] && list[0].term) ? `<div class="semchips">${list.map(x => `<button class="semchip ${x.n === sem ? 'on' : ''}" data-act="sem" data-n="${x.n}">${esc(x.label)}${x.term ? `<small>${esc(x.term)}</small>` : ''}${x.n < newest ? '<small>📦 Archiv</small>' : ''}</button>`).join('')}</div>` : '';
   return `<div class="wrap fade">
-    <div class="top">${backBtn('welcome','Start')}<span class="spacer"></span>${coinPill()}<span class="pill">🔥 ${streak()}</span><button class="pill" data-act="settings" aria-label="Einstellungen">⚙️</button></div>
+    <div class="top">${backBtn('welcome','Start')}<span class="spacer"></span><span class="pill">🔥 ${streak()}</span><button class="pill" data-act="settings" aria-label="Einstellungen">⚙️</button></div>
     ${noteHtml()}
     <h1 class="h-title">Deine Module</h1>
-    <p class="h-sub">Such dir aus, was du heute lernen willst.</p>
+    ${chips}
+    ${sem < newest ? `<div class="note">📦 Archiv: Das ist ein früheres Semester. Dein aktuelles ist das ${esc((list.find(x => x.n === newest)||{}).label || '')}.</div>` : `<p class="h-sub">Such dir aus, was du heute lernen willst.</p>`}
     <button class="gamebar" data-act="game"><span class="gi">🏰</span><span class="gt">Study Defense<small>Wissen ist die einzige Währung</small></span><span class="gc">Rekord: Welle ${bestWaveAll()}</span></button>
-    ${S.modules.length ? `<div class="grid">${cards}</div>` : `<div class="empty"><b>Noch keine Module da</b>Schick Claude deinen Stoff – er erscheint dann beim nächsten Öffnen mit Internet hier.</div>`}
+    ${mods.length ? grouped : `<div class="empty"><b>Noch keine Module in diesem Semester</b>Schick Claude deinen Stoff – er erscheint dann beim nächsten Öffnen mit Internet hier.</div>`}
   </div>`;
 }
 
@@ -1087,6 +1116,7 @@ const A = {
     if (p>=80) confetti();
   },
   settings: () => go('settings'),
+  sem: d => { setSem(+d.n); render(); },
   reload: () => { location.reload(); },
   backup: async () => {
     const name = 'kopfsache-backup-' + fmtDay(new Date()) + '.json';
@@ -1413,7 +1443,10 @@ function vGame(){
     <div class="top">${backBtn('home','Module')}</div>
     <h1 class="h-title">🏰 Study Defense</h1>
     <p class="h-sub">Welches Modul willst du spielen?</p>
-    ${S.modules.length ? `<div class="list">${S.modules.map(x => { const b = P.game.best[x.id]; return `<button class="row" data-act="gamePick" data-id="${esc(x.id)}"><span class="num">${esc(x.emoji||'📘')}</span><span class="t">${esc(x.title)}<small>${(x.questions||[]).length} Fragen · Rekord: Welle ${b ? b.wave : 0}</small></span><span>›</span></button>`; }).join('')}</div>` : `<div class="empty"><b>Noch keine Module da</b></div>`}
+    ${(() => { const sem = curSem(), row = x => { const b = P.game.best[x.id]; return `<button class="row" data-act="gamePick" data-id="${esc(x.id)}"><span class="num">${esc(x.emoji||'📘')}</span><span class="t">${esc(x.title)}<small>${(x.questions||[]).length} Fragen · Rekord: Welle ${b ? b.wave : 0}</small></span><span>›</span></button>`; };
+      const now = S.modules.filter(x => modSem(x) === sem), other = S.modules.filter(x => modSem(x) !== sem);
+      if (!S.modules.length) return `<div class="empty"><b>Noch keine Module da</b></div>`;
+      return `<div class="list">${now.map(row).join('')}</div>` + (other.length ? `<h3 class="subj">Andere Semester</h3><div class="list">${other.map(row).join('')}</div>` : ''); })()}
   </div>`;
 }
 function vPlay(){
