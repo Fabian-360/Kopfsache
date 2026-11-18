@@ -180,6 +180,49 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .qrow small{color:var(--muted);font-weight:700;font-size:13px;white-space:nowrap}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
 :root{--gold:#FFC83D}
+.gwrap{max-width:1100px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top)) 12px calc(20px + env(safe-area-inset-bottom))}
+.gtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ghud{flex:1;display:flex;gap:8px;flex-wrap:wrap}
+.gh{background:var(--card);border-radius:999px;padding:7px 12px;font-weight:800;font-size:15px;box-shadow:var(--shadow)}
+.gh b{color:var(--gold)} .gh.hot{color:var(--gold);outline:2px solid var(--gold)}
+.gsp{min-width:52px;justify-content:center;color:var(--ink)}
+.gcanvas{position:relative;border-radius:18px;overflow:hidden;box-shadow:var(--shadow);touch-action:manipulation;max-width:calc((100vh - 140px) * 1.5625);max-width:calc((100dvh - 140px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 1.5625);margin:0 auto}
+.gcanvas canvas{width:100%;height:auto;display:block}
+.gbar{display:flex;align-items:center;gap:12px;margin-top:12px}
+.ghint{color:var(--muted);font-weight:700;font-size:14px;text-align:center;margin-top:10px}
+.gpanel{position:fixed;left:50%;transform:translateX(-50%);width:min(760px,calc(100% - 24px));z-index:30;background:rgba(24,24,28,.97);border:1px solid var(--line);border-radius:20px;padding:16px 18px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.gpanel.at-bottom{bottom:calc(14px + env(safe-area-inset-bottom))}
+.gpanel.at-top{top:calc(70px + env(safe-area-inset-top))}
+.gx{position:absolute;right:12px;top:10px;width:34px;height:34px;border-radius:50%;background:var(--card2);font-weight:800}
+.gwbtn{min-height:44px;padding:10px 18px;font-size:16px}
+.gpanel>b{display:block;font-size:17px;margin-bottom:10px}
+.gmeta{display:block;color:var(--muted);font-weight:700;margin:-4px 0 12px}
+.gbuild{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media (max-width:640px){.gbuild{grid-template-columns:repeat(3,1fr)}}
+.gb{background:var(--card2);border-radius:16px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid transparent}
+.gb span{font-size:28px} .gb b{font-size:13px} .gb small{font-weight:800;color:var(--gold);font-size:13px}
+.gb.off{opacity:.4}
+.gmodal{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top)) 14px 40px}
+.gcard{width:100%;max-width:760px;background:var(--bg);border-radius:26px;padding:16px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.gcard .qcard{margin-bottom:0;box-shadow:none}
+.gcard.center{text-align:center;padding:30px 20px}
+.gcard h2{font-size:28px;margin:6px 0 12px}
+.qtimer{position:relative;height:26px;border-radius:999px;background:var(--card2);overflow:hidden;margin-bottom:12px}
+.qtimer i{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#2FBF71,#FFC83D);border-radius:999px}
+.qtimer i.low{background:linear-gradient(90deg,#E10600,#FF5A4F)}
+.qtimer span{position:absolute;right:12px;top:0;bottom:0;display:flex;align-items:center;font-weight:800;font-size:14px}
+.grew{margin-top:12px;border-radius:16px;padding:12px 16px;font-weight:800;font-size:22px;text-align:center}
+.grew small{font-size:14px;opacity:.85;font-weight:700}
+.grew.ok{background:rgba(255,200,61,.12);color:var(--gold)} .grew.bad{background:var(--badbg);color:var(--bad);font-size:17px}
+.gstats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+@media (max-width:640px){.gstats{grid-template-columns:repeat(2,1fr)}}
+.gstats div{background:var(--card);border-radius:16px;padding:14px 10px;text-align:center}
+.gstats b{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:28px;color:var(--gold)}
+.gstats span{font-size:13px;font-weight:700;color:var(--muted)}
+.twlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.tw{background:var(--card2);border-radius:14px;padding:12px;display:grid;grid-template-columns:40px 1fr;column-gap:8px;align-items:center}
+.tw .ti{font-size:28px;grid-row:span 2} .tw small{color:var(--muted);font-weight:700;font-size:12.5px}
+.tw.locked{opacity:.5}
 pre.code{background:#0E0E11;border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin:0 0 18px;font:15px/1.55 ui-monospace,Menlo,monospace;color:#F3F1EC;overflow-x:auto;white-space:pre;tab-size:4}
 pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 .opt .ot{white-space:pre-wrap}
@@ -300,7 +343,8 @@ function md(t, m){
 /* ---------- state ---------- */
 let P = normP(lsGet(LS_P));
 let S = { view:'welcome', modules: (lsGet(LS_M)||[]), contentDate: lsGet(LS_M+'.date')||'', modId:null, lessonId:null, lq:[], test:null, filter:'all', note:null, confirmQuit:false };
-function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0 }; }
+function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0, game: normGame(p.game) }; }
+function normGame(g){ g = g && typeof g==='object' ? g : {}; const st = g.stats||{}; return { best:g.best||{}, bonus:g.bonus||{}, stats:{ games:+st.games||0, waves:+st.waves||0, right:+st.right||0, wrong:+st.wrong||0, kills:+st.kills||0, bestStreak:+st.bestStreak||0 } }; }
 
 const mod = () => S.modules.find(m => m.id===S.modId);
 const key = (m,q) => m.id+'::'+q.id;
@@ -318,7 +362,6 @@ function record(m,q,ok){
   e.last = ok ? 'r' : 'w'; e.t = Date.now();
   P.q[k] = e;
   const d = fmtDay(new Date()); P.days[d] = (P.days[d]||0)+1;
-  if (ok){ P.run++; if (P.run>=3){ P.coins++; P.run=0; S.toast='<span class="c">🪙</span> +1 Münze!'; } } else P.run = 0;
   P.ct = Date.now();
   save();
 }
@@ -683,6 +726,10 @@ function mergeP(a, b){
   out.tests.sort((x,y) => x.t-y.t); out.tests = out.tests.slice(-150);
   for (const d in b.days) out.days[d] = Math.max(out.days[d]||0, b.days[d]);
   if ((b.ct||0) > (out.ct||0)){ out.coins=b.coins; out.run=b.run; out.ct=b.ct; }
+  const ga = out.game, gb = b.game;
+  for (const k in gb.best){ const x = ga.best[k], y = gb.best[k]; if (!x || (y.wave||0) > (x.wave||0) || ((y.wave||0) === (x.wave||0) && (y.score||0) > (x.score||0))) ga.best[k] = y; }
+  Object.assign(ga.bonus, gb.bonus);
+  for (const k in gb.stats) ga.stats[k] = Math.max(ga.stats[k]||0, gb.stats[k]||0);
   return out;
 }
 function sortMods(list){ return list.slice().sort((a,b) => (a.order??99)-(b.order??99) || String(a.title).localeCompare(String(b.title))); }
@@ -722,7 +769,8 @@ function ring(p, color){
   return `<svg width="220" height="220" viewBox="0 0 220 220"><circle cx="110" cy="110" r="${r}" fill="none" stroke="#26262B" stroke-width="20"/><circle cx="110" cy="110" r="${r}" fill="none" stroke="${color}" stroke-width="20" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}" transform="rotate(-90 110 110)" class="ringarc" data-off="${off}" style="transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1)"/></svg>`;
 }
 const backBtn = (act, label, extra) => `<button class="back" data-act="${act}"${extra||''}>‹ ${esc(label)}</button>`;
-const coinPill = () => `<span class="coins">🪙 <b>${P.coins}</b><span class="run">${[0,1,2].map(i=>`<i class="${i<P.run?'on':''}"></i>`).join('')}</span></span>`;
+const coinPill = () => '';
+const bestWaveAll = () => Math.max(0, ...Object.values(P.game.best).map(b => b.wave||0));
 const isRight = x => x.ok === true;
 const noteHtml = () => S.note ? `<div class="note">${esc(S.note)}</div>` : '';
 
@@ -741,7 +789,7 @@ function vWelcome(){
     <div class="chips">
       <div class="chip"><b>🔥 ${s}</b><span>${s===1?'Tag':'Tage'} in Folge</span></div>
       <div class="chip"><b>${today}</b><span>Antworten heute</span></div>
-      <div class="chip"><b>🪙 ${P.coins}</b><span>Münzen</span></div>
+      <div class="chip"><b>🏰 ${bestWaveAll()}</b><span>Beste Welle</span></div>
     </div>
     <button class="btn big" data-act="home">Los geht's →</button>
   </div>`;
@@ -763,7 +811,7 @@ function vHome(){
     ${noteHtml()}
     <h1 class="h-title">Deine Module</h1>
     <p class="h-sub">Such dir aus, was du heute lernen willst.</p>
-    <button class="gamebar" data-act="game"><span class="gi">🎮</span><span class="gt">Spiel<small>Wähl ein Modul und setz deine Münzen ein</small></span><span class="gc">🪙 ${P.coins}</span></button>
+    <button class="gamebar" data-act="game"><span class="gi">🏰</span><span class="gt">Study Defense<small>Wissen ist die einzige Währung</small></span><span class="gc">Rekord: Welle ${bestWaveAll()}</span></button>
     ${S.modules.length ? `<div class="grid">${cards}</div>` : `<div class="empty"><b>Noch keine Module da</b>Schick Claude deinen Stoff – er erscheint dann beim nächsten Öffnen mit Internet hier.</div>`}
   </div>`;
 }
@@ -828,7 +876,7 @@ function qBlock(item, i, act, label, m, showFig){
   const fig = showFig && answered && b.fig ? `<div class="qfig">${figHtml(m, b.fig)}</div>` : '';
   const code = b.code ? `<pre class="code">${esc(b.code)}</pre>` : '';
   const hint = b.multi && !answered ? `<div class="mhint">Mehrere Antworten können richtig sein – alle passenden antippen, dann prüfen.</div>` : '';
-  const check = b.multi && !answered ? `<button class="btn acc" style="margin-top:14px;width:100%" data-act="${act === 'tAns' ? 'tCheck' : 'lCheck'}" data-i="${i}" ${sel.length ? '' : 'disabled'}>Antwort prüfen</button>` : '';
+  const check = b.multi && !answered ? `<button class="btn acc" style="margin-top:14px;width:100%" data-act="${act === 'tAns' ? 'tCheck' : act === 'gAns' ? 'gCheck' : 'lCheck'}" data-i="${i}" ${sel.length ? '' : 'disabled'}>Antwort prüfen</button>` : '';
   const tag = b.original ? ' · 📝 Original-Moodle-Frage' : (b.gen ? ' · 🎲 neue Zahlen' : '');
   return `<div class="qcard"><div class="qhead">${label}${tag}</div><div class="qtext">${promptHtml(b)}</div>${code}${hint}<div class="opts ${answered?'locked':''}">${opts}</div>${check}${fb}${fig}</div>`;
 }
@@ -958,7 +1006,7 @@ function vSettings(){
     <p class="h-sub">Dein Fortschritt ist auf diesem iPad gespeichert.</p>
     <div class="setcard">
       <h3>💾 Backup</h3>
-      <p>Sichere ab und zu deinen Fortschritt (${nq} beantwortete Fragen, 🪙 ${P.coins} Münzen) – z.&nbsp;B. in der Dateien-App oder iCloud. Falls du die App mal löschst, kannst du ihn so zurückholen.</p>
+      <p>Sichere ab und zu deinen Fortschritt (${nq} beantwortete Fragen, Spielrekorde und Statistiken) – z.&nbsp;B. in der Dateien-App oder iCloud. Falls du die App mal löschst, kannst du ihn so zurückholen.</p>
       <div class="btnrow">
         <button class="btn" data-act="backup">Backup speichern</button>
         <label class="btn ghost">Backup laden<input type="file" accept="application/json,.json" id="restore" hidden></label>
@@ -972,25 +1020,19 @@ function vSettings(){
   </div>`;
 }
 
-function vGame(){
-  const m = S.gameMod && S.modules.find(x => x.id===S.gameMod);
-  if (m) return `<div class="wrap fade">
-    <div class="top">${backBtn('game','Modulwahl')}<span class="spacer"></span>${coinPill()}</div>
-    <div class="soon"><div class="big">🎮</div><h1>${esc(m.emoji||'')} ${esc(m.title)}</h1>
-      <p>Hier kommt bald das Spiel hin. Deine Münzen sind schon gesammelt und warten auf dich.</p>
-      <div class="coinbig">🪙 ${P.coins}</div>
-      <button class="btn ghost" data-act="home">Zurück zu den Modulen</button></div>
-  </div>`;
-  return `<div class="wrap fade">
-    <div class="top">${backBtn('home','Module')}<span class="spacer"></span>${coinPill()}</div>
-    <h1 class="h-title">🎮 Spiel</h1>
-    <p class="h-sub">Welches Modul willst du spielen?</p>
-    ${S.modules.length ? `<div class="list">${S.modules.map(x => `<button class="row" data-act="gamePick" data-id="${esc(x.id)}"><span class="num">${esc(x.emoji||'📘')}</span><span class="t">${esc(x.title)}<small>${(x.questions||[]).length} Fragen</small></span><span>›</span></button>`).join('')}</div>` : `<div class="empty"><b>Noch keine Module da</b></div>`}
-  </div>`;
-}
-
 function render(){
-  const v = { settings:vSettings, stack:vStack, game:vGame, welcome:vWelcome, home:vHome, module:vModule, learn:vLearn, lesson:vLesson, test:vTest, result:vResult, wb:vWorkbook }[S.view] || vHome;
+  if (S.view === 'play'){
+    if (!S.play){ S.view = 'game'; }
+    else if (document.getElementById('gcv')){ renderGameUI(); return; }
+    else {
+      app.innerHTML = vPlay();
+      document.getElementById('gcv').addEventListener('pointerdown', gameTap);
+      renderGameUI();
+      if (!gameRaf) gameRaf = requestAnimationFrame(gameLoop);
+      return;
+    }
+  }
+  const v = { play:vPlay, settings:vSettings, stack:vStack, game:vGame, welcome:vWelcome, home:vHome, module:vModule, learn:vLearn, lesson:vLesson, test:vTest, result:vResult, wb:vWorkbook }[S.view] || vHome;
   app.innerHTML = v();
   if (S.toast){ const html = S.toast; S.toast = false; const t = document.createElement('div'); t.className='toast'; t.innerHTML=html; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
   const arc = app.querySelector('.ringarc');
@@ -1014,6 +1056,7 @@ function finishAnswer(it, chosen, m){
   it.chosen = chosen;
   const q = m && (m.questions||[]).find(x => x.id===it.qid);
   if (q) record(m, q, it.ok);
+  if (it.onDone) it.onDone(it);
   render();
 }
 function startTest(mode){
@@ -1063,6 +1106,397 @@ const A = {
   wb: () => { S.filter = 'all'; go('wb'); },
   filter: d => { S.filter = d.f; render(); },
 };
+/* ================= STUDY DEFENSE – Tower Defense mit Lernfragen ================= */
+/* Alle Werte zum Balancing an einer Stelle: */
+const GCFG = {
+  reward: { 1: 10, 2: 20, 3: 30 },          // Münzen nach Schwierigkeit
+  levelName: { 1: 'Leicht', 2: 'Mittel', 3: 'Schwer' },
+  mult: s => s >= 10 ? 5 : s >= 8 ? 4 : s >= 5 ? 3 : s >= 3 ? 2 : 1,   // Serie → Multiplikator
+  repeatBonus: 10,                           // Lernbonus für mehrfach falsch beantwortete Fragen (einmal pro Frage)
+  repeatShare: 0.3,                          // Anteil Wiederholungsfragen aus dem roten Stapel
+  startQuestions: 10,                        // Startfragen vor jeder Runde
+  qTime: 60,                                 // Sekunden pro Frage
+  lives: 20,
+  firstQ: 6, everyQ: 16,                     // Fragen während einer Welle: nach 6 s, dann alle 16 s (Spielzeit)
+};
+const TOWERS = {
+  bogen: { name:'Bogenschützen', icon:'🏹', color:'#C98B3A', cost:50,  dmg:9,  rate:0.55, range:150, splash:0,  desc:'schnell · wenig Schaden · günstig' },
+  magie: { name:'Magieturm',     icon:'🔮', color:'#8A5CF6', cost:100, dmg:14, rate:1.3,  range:130, splash:60, desc:'langsamer · Flächenschaden' },
+  kanone:{ name:'Kanone',        icon:'💣', color:'#9AA0A6', cost:150, dmg:48, rate:2.0,  range:175, splash:28, desc:'hoher Schaden · langsam · teuer' },
+  eis:   { name:'Eisturm',       icon:'❄️', color:'#4DA3FF', cost:90,  dmg:3,  rate:1.0,  range:120, splash:55, slow:0.5, desc:'verlangsamt Gegner', unlock:5 },
+  blitz: { name:'Blitzturm',     icon:'⚡', color:'#FFC83D', cost:200, dmg:22, rate:1.2,  range:165, splash:0,  chain:3, desc:'springt auf 3 Gegner über', unlock:10 },
+};
+const TOWER_ORDER = ['bogen','magie','kanone','eis','blitz'];
+const ENEMY = {
+  normal: { hp:1,   speed:62,  r:12, color:'#E04848', lives:1, score:10 },
+  schnell:{ hp:0.55,speed:108, r:9,  color:'#FFB547', lives:1, score:12 },
+  panzer: { hp:3.2, speed:38,  r:16, color:'#A34DD9', lives:3, score:30 },
+  boss:   { hp:14,  speed:30,  r:24, color:'#FF2A1F', lives:10, score:150 },
+};
+const GW = 1000, GH = 640;
+const PATH = [[-30,120],[260,120],[260,420],[520,420],[520,180],[780,180],[780,500],[1030,500]];
+const SLOTS_RAW = [[90,50],[190,50],[110,195],[180,300],[340,250],[330,500],[450,500],[390,340],[440,250],[600,330],[600,100],[700,100],[650,260],[860,300],[700,420],[880,580],[930,420],[860,110]];
+const segLen = PATH.slice(1).map((p,i) => Math.hypot(p[0]-PATH[i][0], p[1]-PATH[i][1]));
+const PATH_LEN = segLen.reduce((a,b) => a+b, 0);
+function distToPath(x, y){
+  let best = 1e9;
+  for (let i = 0; i < PATH.length-1; i++){
+    const [ax,ay] = PATH[i], [bx,by] = PATH[i+1], dx = bx-ax, dy = by-ay;
+    const t = Math.max(0, Math.min(1, ((x-ax)*dx + (y-ay)*dy) / (dx*dx+dy*dy)));
+    best = Math.min(best, Math.hypot(x-(ax+t*dx), y-(ay+t*dy)));
+  }
+  return best;
+}
+const SLOTS = SLOTS_RAW.filter(([x,y]) => distToPath(x,y) >= 55);
+function posAt(d){
+  for (let i = 0; i < segLen.length; i++){
+    if (d <= segLen[i]){ const t = d/segLen[i]; return [PATH[i][0] + (PATH[i+1][0]-PATH[i][0])*t, PATH[i][1] + (PATH[i+1][1]-PATH[i][1])*t]; }
+    d -= segLen[i];
+  }
+  return PATH[PATH.length-1];
+}
+function waveSpec(n){
+  const list = [], count = 5 + 2*n;
+  for (let i = 0; i < count; i++){
+    let t = 'normal';
+    if (n >= 3 && i % 3 === 2) t = 'schnell';
+    if (n >= 5 && i % 5 === 4) t = 'panzer';
+    list.push(t);
+  }
+  if (n % 10 === 0) list.push('boss');
+  return list;
+}
+const hpBase = n => (n <= 2 ? 22 : 26) * Math.pow(1.17, n-1);
+function towerStats(t){
+  const b = TOWERS[t.type], L = t.level - 1;
+  return { dmg: b.dmg * Math.pow(1.5, L), range: b.range * (1 + 0.12*L), rate: b.rate * Math.pow(0.86, L), splash: b.splash ? b.splash * (1 + 0.1*L) : 0, slow: b.slow, chain: b.chain ? b.chain + L : 0 };
+}
+const upCost = t => Math.round(TOWERS[t.type].cost * 0.7 * t.level);
+const towerUnlocked = k => !TOWERS[k].unlock || bestWaveAll() >= TOWERS[k].unlock;
+
+/* ---------- Fragen fürs Spiel: aus dem bestehenden Lernsystem ---------- */
+function gamePickQuestion(G){
+  const m = G.m, qs = (m.questions||[]).filter(q => !G.used.has(q.id));
+  const pool = qs.length ? qs : (m.questions||[]);
+  if (!qs.length) G.used.clear();
+  const red = pool.filter(q => status(m,q) === 'w');
+  const q = (red.length && Math.random() < GCFG.repeatShare) ? rand(red) : rand(pool);
+  G.used.add(q.id);
+  const e = P.q[key(m,q)] || { r:0, w:0 };
+  const repeat = e.last === 'w' && (e.w||0) >= 2 && !P.game.bonus[key(m,q)];
+  return { qid:q.id, b:buildQ(q, m), chosen:null, sel:[], level: q.level || 2, repeat, wasRed: e.last === 'w', start: performance.now(), onDone: gameOnAnswer };
+}
+function gameAsk(G, kind){
+  G.q = gamePickQuestion(G); G.qKind = kind; G.paused = true; G.reward = null;
+  renderGameUI();
+}
+function gameOnAnswer(it){
+  const G = S.play; if (!G || G.q !== it) return;
+  const st = P.game.stats;
+  if (it.ok){
+    G.streak++; G.errStreak = 0; st.right++; st.bestStreak = Math.max(st.bestStreak, G.streak);
+    const base = GCFG.reward[it.level] || 20, mult = GCFG.mult(G.streak);
+    let bonus = 0;
+    if (it.repeat){ bonus = GCFG.repeatBonus; P.game.bonus[key(G.m, {id:it.qid})] = Date.now(); }
+    const total = (base + bonus) * mult;
+    G.coins += total; G.earned += total; G.right++;
+    G.reward = { ok:true, base, bonus, mult, total };
+  } else {
+    G.streak = 0; G.errStreak++; st.wrong++; G.wrong++;
+    let extra = [];
+    if (G.phase !== 'quiz'){
+      if (G.errStreak === 1) extra = ['normal'];
+      else if (G.errStreak === 2) extra = ['normal','normal'];
+      else { extra = ['panzer','panzer','panzer']; G.errStreak = 0; }   // starke Gruppe, danach beginnt die Fehler-Serie neu
+      G.queue.push(...extra.map(t => ({ t, extra:true })));
+    }
+    G.reward = { ok:false, extra, timeout: !!it.timeout };
+  }
+  save();
+}
+function gameCloseQuestion(){
+  const G = S.play; if (!G) return;
+  G.q = null; G.reward = null; G.paused = false;
+  if (G.phase === 'quiz'){
+    G.quizN++;
+    if (G.quizN >= GCFG.startQuestions){ G.phase = 'build'; G.paused = false; }
+    else { gameAsk(G, 'quiz'); return; }
+  }
+  renderGameUI();
+}
+
+/* ---------- Spielstart / Ablauf ---------- */
+function gameStart(m){
+  S.play = { m, phase:'quiz', coins:0, earned:0, lives:GCFG.lives, wave:0, towers:[], enemies:[], shots:[], fx:[], queue:[], spawnT:0, waveT:0, nextQ:GCFG.firstQ,
+             streak:0, errStreak:0, right:0, wrong:0, kills:0, score:0, speed:1, sel:null, used:new Set(), quizN:0, q:null, paused:true, over:false, last:0 };
+  P.game.stats.games++; save();
+  S.view = 'play'; render(); window.scrollTo(0,0);
+  gameAsk(S.play, 'quiz');
+}
+function gameStartWave(){
+  const G = S.play; if (!G || G.phase !== 'build') return;
+  G.wave++; G.phase = 'wave'; G.waveT = 0; G.nextQ = GCFG.firstQ; G.spawnT = 0;
+  G.queue = waveSpec(G.wave).map(t => ({ t })).concat(G.queue.filter(x => x.extra));
+  G.sel = null; renderGameUI();
+}
+function spawnEnemy(G, t){
+  const d = ENEMY[t], hp = hpBase(G.wave) * d.hp;
+  G.enemies.push({ t, d:0, hp, max:hp, speed:d.speed, slowT:0, r:d.r });
+}
+function gameOver(){
+  const G = S.play; G.over = true; G.phase = 'over'; G.paused = true;
+  const k = G.m.id, cur = P.game.best[k] || { wave:0, score:0 };
+  const waves = Math.max(0, G.wave - 1);
+  G.newRecord = waves > (cur.wave||0) || (waves === (cur.wave||0) && G.score > (cur.score||0));
+  if (G.newRecord) P.game.best[k] = { wave: waves, score: G.score, date: Date.now() };
+  P.game.stats.waves += waves; P.game.stats.kills += G.kills;
+  save(); renderGameUI();
+}
+
+/* ---------- Spiel-Schleife ---------- */
+let gameRaf = 0;
+function gameLoop(ts){
+  const G = S.play;
+  if (!G || S.view !== 'play'){ gameRaf = 0; return; }
+  const dtReal = Math.min(0.05, (ts - (G.last || ts)) / 1000); G.last = ts;
+  // Fragen-Timer läuft in Echtzeit, Spiel steht währenddessen
+  if (G.q && G.q.ok === undefined){
+    const left = GCFG.qTime - (ts - G.q.start) / 1000;
+    const bar = document.getElementById('qtimer'), lbl = document.getElementById('qtimerl');
+    if (bar){ bar.style.width = Math.max(0, left / GCFG.qTime * 100) + '%'; bar.classList.toggle('low', left < 15); }
+    if (lbl) lbl.textContent = Math.max(0, Math.ceil(left)) + ' s';
+    if (left <= 0){ G.q.timeout = true; finishAnswer(G.q, -1, G.m); }
+  }
+  if (!G.paused && G.phase === 'wave'){
+    for (let k = 0; k < G.speed; k++) gameStep(G, dtReal);
+  }
+  drawGame(G, ts);
+  gameRaf = requestAnimationFrame(gameLoop);
+}
+function gameStep(G, dt){
+  G.waveT += dt;
+  // Gegner erzeugen
+  G.spawnT -= dt;
+  if (G.queue.length && G.spawnT <= 0){ spawnEnemy(G, G.queue.shift().t); G.spawnT = 0.8; }
+  // Gegner bewegen
+  for (const e of G.enemies){
+    const sp = e.speed * (e.slowT > 0 ? 0.5 : 1); e.slowT -= dt;
+    e.d += sp * dt;
+    if (e.d >= PATH_LEN){ e.dead = true; G.lives -= ENEMY[e.t].lives; G.fx.push({ k:'hit', t:0.5 }); }
+  }
+  // Türme schießen
+  for (const t of G.towers){
+    t.cd -= dt; if (t.cd > 0) continue;
+    const s = towerStats(t), [tx,ty] = t.pos;
+    let target = null, bestD = -1;
+    for (const e of G.enemies){ if (e.dead) continue; const [ex,ey] = posAt(e.d); if (Math.hypot(ex-tx, ey-ty) <= s.range && e.d > bestD){ bestD = e.d; target = e; } }
+    if (!target) continue;
+    t.cd = s.rate;
+    const [ex,ey] = posAt(target.d);
+    if (s.chain){
+      let cur = target, hit = new Set(), from = [tx,ty];
+      for (let c = 0; c < s.chain && cur; c++){
+        hit.add(cur); const p = posAt(cur.d); damage(G, cur, s.dmg * (c ? 0.7 : 1)); G.shots.push({ a:from, b:p, t:0.15, color:'#FFC83D', w:3 });
+        from = p; let nb = null, nd = 1e9;
+        for (const e of G.enemies){ if (e.dead || hit.has(e)) continue; const q = posAt(e.d), dd = Math.hypot(q[0]-p[0], q[1]-p[1]); if (dd < 110 && dd < nd){ nd = dd; nb = e; } }
+        cur = nb;
+      }
+    } else if (s.splash){
+      for (const e of G.enemies){ if (e.dead) continue; const [qx,qy] = posAt(e.d); if (Math.hypot(qx-ex, qy-ey) <= s.splash){ damage(G, e, s.dmg); if (s.slow) e.slowT = 1.6; } }
+      G.shots.push({ a:[tx,ty], b:[ex,ey], t:0.18, color:TOWERS[t.type].color, w:t.type === 'kanone' ? 5 : 3 });
+      G.fx.push({ k:'boom', x:ex, y:ey, r:s.splash, t:0.3, color:TOWERS[t.type].color });
+    } else {
+      damage(G, target, s.dmg); G.shots.push({ a:[tx,ty], b:[ex,ey], t:0.12, color:TOWERS[t.type].color, w:2 });
+    }
+  }
+  G.enemies = G.enemies.filter(e => !e.dead);
+  for (const x of G.shots) x.t -= dt; G.shots = G.shots.filter(x => x.t > 0);
+  for (const x of G.fx) x.t -= dt; G.fx = G.fx.filter(x => x.t > 0);
+  if (G.lives <= 0){ G.lives = 0; gameOver(); return; }
+  // Frage während der Welle
+  if (G.waveT >= G.nextQ && (G.queue.length || G.enemies.length)){ G.nextQ = G.waveT + GCFG.everyQ; gameAsk(G, 'wave'); return; }
+  // Welle geschafft
+  if (!G.queue.length && !G.enemies.length){ G.phase = 'build'; G.score += 50 * G.wave; renderGameUI(); }
+  G.hudT = (G.hudT || 0) - dt; if (G.hudT <= 0){ G.hudT = 0.25; updateHud(); }
+}
+function damage(G, e, dmg){
+  if (e.dead) return; e.hp -= dmg;
+  if (e.hp <= 0){ e.dead = true; G.kills++; G.score += ENEMY[e.t].score; }
+}
+
+/* ---------- Zeichnen ---------- */
+function drawGame(G, ts){
+  const cv = document.getElementById('gcv'); if (!cv) return;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0,0,GW,GH);
+  ctx.fillStyle = '#121216'; ctx.fillRect(0,0,GW,GH);
+  ctx.strokeStyle = 'rgba(255,255,255,.03)'; ctx.lineWidth = 1;
+  for (let x = 0; x < GW; x += 40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,GH); ctx.stroke(); }
+  for (let y = 0; y < GH; y += 40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(GW,y); ctx.stroke(); }
+  // Weg
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.strokeStyle = '#2A2A31'; ctx.lineWidth = 58; ctx.beginPath(); PATH.forEach(([x,y],i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y)); ctx.stroke();
+  ctx.strokeStyle = '#34343C'; ctx.lineWidth = 46; ctx.stroke();
+  ctx.setLineDash([10,14]); ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+  // Burg
+  ctx.font = '44px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🏰', 965, 500);
+  // Bauplätze & Türme
+  SLOTS.forEach(([x,y], i) => {
+    const t = G.towers.find(t => t.slot === i);
+    if (G.sel === i){ const r = t ? towerStats(t).range : 0; if (r){ ctx.fillStyle = 'rgba(255,200,61,.08)'; ctx.strokeStyle = 'rgba(255,200,61,.5)'; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); ctx.stroke(); } }
+    if (!t){
+      ctx.strokeStyle = G.sel === i ? '#FFC83D' : 'rgba(255,255,255,.18)'; ctx.lineWidth = 2; ctx.setLineDash([5,5]);
+      ctx.beginPath(); ctx.arc(x,y,24,0,7); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.font = 'bold 20px sans-serif'; ctx.fillText('+', x, y+1);
+    } else {
+      const b = TOWERS[t.type];
+      ctx.fillStyle = '#1D1D22'; ctx.strokeStyle = b.color; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x,y,26,0,7); ctx.fill(); ctx.stroke();
+      ctx.font = '24px serif'; ctx.fillText(b.icon, x, y+1);
+      for (let l = 0; l < t.level; l++){ ctx.fillStyle = '#FFC83D'; ctx.beginPath(); ctx.arc(x-10+l*10, y+33, 3.5, 0, 7); ctx.fill(); }
+    }
+  });
+  // Gegner
+  for (const e of G.enemies){
+    const [x,y] = posAt(e.d), d = ENEMY[e.t];
+    ctx.fillStyle = d.color; ctx.beginPath(); ctx.arc(x,y,e.r,0,7); ctx.fill();
+    if (e.slowT > 0){ ctx.strokeStyle = '#4DA3FF'; ctx.lineWidth = 3; ctx.stroke(); }
+    if (e.t === 'boss'){ ctx.font = '22px serif'; ctx.fillText('👹', x, y+1); }
+    const w = e.r * 2.2; ctx.fillStyle = '#000'; ctx.fillRect(x-w/2, y-e.r-9, w, 4);
+    ctx.fillStyle = '#2FBF71'; ctx.fillRect(x-w/2, y-e.r-9, w * Math.max(0, e.hp/e.max), 4);
+  }
+  // Schüsse & Effekte
+  for (const s of G.shots){ ctx.strokeStyle = s.color; ctx.lineWidth = s.w; ctx.globalAlpha = Math.min(1, s.t*8); ctx.beginPath(); ctx.moveTo(s.a[0], s.a[1]); ctx.lineTo(s.b[0], s.b[1]); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+  for (const f of G.fx){
+    if (f.k === 'boom'){ ctx.strokeStyle = f.color; ctx.globalAlpha = f.t/0.3; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (1.2 - f.t), 0, 7); ctx.stroke(); }
+    if (f.k === 'hit'){ ctx.fillStyle = 'rgba(225,6,0,' + (f.t*0.5) + ')'; ctx.fillRect(0,0,GW,GH); }
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- Oberfläche ---------- */
+function updateHud(){
+  const G = S.play, h = document.getElementById('ghud'); if (!G || !h) return;
+  const mult = GCFG.mult(G.streak);
+  h.innerHTML = `<span class="gh"><b>🪙 ${G.coins}</b></span><span class="gh">❤️ ${G.lives}</span><span class="gh">🌊 Welle ${G.wave}</span><span class="gh ${mult>1?'hot':''}">🔥 ${G.streak} · ${mult}×</span><span class="gh">⭐ ${G.score}</span>`;
+}
+function vGame(){
+  const m = S.gameMod && S.modules.find(x => x.id === S.gameMod);
+  const st = P.game.stats;
+  if (m){
+    const best = P.game.best[m.id];
+    const towers = TOWER_ORDER.map(k => { const t = TOWERS[k], ok = towerUnlocked(k);
+      return `<div class="tw ${ok?'':'locked'}"><span class="ti">${t.icon}</span><b>${t.name}</b><small>${ok ? `${t.cost} 🪙 · ${t.desc}` : `🔒 ab Welle ${t.unlock}`}</small></div>`; }).join('');
+    return `<div class="wrap fade">
+      <div class="top">${backBtn('game','Modulwahl')}</div>
+      <div class="hero"><div class="memo">🏰</div><div><h1>Study Defense</h1><p>${esc(m.emoji||'')} ${esc(m.title)} · Wissen ist die einzige Währung</p></div></div>
+      <div class="gstats">
+        <div><b>${best ? best.wave : 0}</b><span>Rekord-Welle</span></div>
+        <div><b>${best ? best.score : 0}</b><span>Rekord-Punkte</span></div>
+        <div><b>${st.games}</b><span>Spiele</span></div>
+        <div><b>${st.right + st.wrong ? Math.round(st.right/(st.right+st.wrong)*100) : 0} %</b><span>richtig im Spiel</span></div>
+      </div>
+      <button class="btn big acc" style="width:100%;margin:18px 0" data-act="gStart">⚔️ Runde starten</button>
+      <div class="setcard"><h3>So funktioniert's</h3>
+        <p>• Zuerst <b>${GCFG.startQuestions} Startfragen</b> – damit verdienst du dein Startkapital.<br>
+        • Münzen gibt es <b>nur für richtige Antworten</b>: Leicht ${GCFG.reward[1]} · Mittel ${GCFG.reward[2]} · Schwer ${GCFG.reward[3]}.<br>
+        • Serie: 3 richtige in Folge = 2×, ab 5 = 3×, ab 8 = 4×, ab 10 = 5×.<br>
+        • Mehrfach falsch beantwortete Fragen aus deinem roten Stapel bringen einmalig <b>+${GCFG.repeatBonus} Lernbonus</b>.<br>
+        • Pro Frage hast du <b>${GCFG.qTime} Sekunden</b> – das Spiel pausiert so lange.<br>
+        • Während der Wellen kommen weitere Fragen. Falsche Antworten schicken <b>zusätzliche Gegner</b>.<br>
+        • Alle Antworten zählen auch für dein Übungsheft und deine Kartenstapel.</p></div>
+      <div class="setcard"><h3>Türme</h3><div class="twlist">${towers}</div></div>
+    </div>`;
+  }
+  return `<div class="wrap fade">
+    <div class="top">${backBtn('home','Module')}</div>
+    <h1 class="h-title">🏰 Study Defense</h1>
+    <p class="h-sub">Welches Modul willst du spielen?</p>
+    ${S.modules.length ? `<div class="list">${S.modules.map(x => { const b = P.game.best[x.id]; return `<button class="row" data-act="gamePick" data-id="${esc(x.id)}"><span class="num">${esc(x.emoji||'📘')}</span><span class="t">${esc(x.title)}<small>${(x.questions||[]).length} Fragen · Rekord: Welle ${b ? b.wave : 0}</small></span><span>›</span></button>`; }).join('')}</div>` : `<div class="empty"><b>Noch keine Module da</b></div>`}
+  </div>`;
+}
+function vPlay(){
+  return `<div class="gwrap">
+    <div class="gtop"><button class="back" data-act="gQuit">✕</button><div id="ghud" class="ghud"></div><span id="gwave"></span><button class="pill gsp" data-act="gSpeed" id="gspeed">1×</button></div>
+    <div class="gcanvas"><canvas id="gcv" width="${GW}" height="${GH}"></canvas></div>
+    <div id="gui"></div>
+  </div>`;
+}
+function renderGameUI(){
+  const G = S.play, el = document.getElementById('gui'); if (!G || !el) return;
+  updateHud();
+  const sp = document.getElementById('gspeed'); if (sp) sp.textContent = G.speed + '×';
+  const wb = document.getElementById('gwave');
+  if (wb) wb.innerHTML = G.phase === 'build' && !G.q ? `<button class="btn acc gwbtn" data-act="gWave">🌊 Welle ${G.wave+1} starten</button>` : '';
+  let h = '';
+  if (G.phase === 'over'){
+    const waves = Math.max(0, G.wave - 1);
+    h = `<div class="gmodal"><div class="gcard center">
+      <div style="font-size:56px">🏰💥</div><h2>Die Burg ist gefallen</h2>
+      ${G.newRecord ? '<span class="badge ok">🏆 Neuer Rekord!</span>' : ''}
+      <div class="gstats"><div><b>${waves}</b><span>Wellen überstanden</span></div><div><b>${G.score}</b><span>Punkte</span></div><div><b>${G.right}/${G.right+G.wrong}</b><span>Fragen richtig</span></div><div><b>${G.earned}</b><span>Münzen verdient</span></div></div>
+      <div class="btnrow" style="justify-content:center;margin-top:18px"><button class="btn acc" data-act="gStart">Nochmal</button><button class="btn ghost" data-act="gExit">Zurück</button></div>
+    </div></div>`;
+  } else if (G.q){
+    const it = G.q, answered = it.ok !== undefined;
+    const lvl = GCFG.levelName[it.level] + ' · ' + GCFG.reward[it.level] + ' 🪙';
+    const label = (G.qKind === 'quiz' ? `Startfrage ${G.quizN+1}/${GCFG.startQuestions}` : `Frage in Welle ${G.wave}`) + ' · ' + lvl + (it.repeat ? ' · 🔁 Wiederholung (+' + GCFG.repeatBonus + ' Bonus)' : '');
+    let rew = '';
+    if (answered){
+      const r = G.reward || {};
+      rew = r.ok ? `<div class="grew ok">+${r.total} 🪙 <small>(${r.base}${r.bonus ? ' + ' + r.bonus + ' Lernbonus' : ''}${r.mult > 1 ? ' × ' + r.mult + ' Serie' : ''})</small></div>`
+                 : `<div class="grew bad">${r.timeout ? '⏰ Zeit abgelaufen' : 'Keine Münzen'}${r.extra && r.extra.length ? ` · ${r.extra.length === 3 ? '⚠️ starke Gegnergruppe' : '+' + r.extra.length + ' Gegner'} kommt` : ''}</small></div>`;
+    }
+    h = `<div class="gmodal"><div class="gcard">
+      ${answered ? '' : `<div class="qtimer"><i id="qtimer"></i><span id="qtimerl">${GCFG.qTime} s</span></div>`}
+      ${qBlock(it, 0, 'gAns', label, G.m, true)}
+      ${answered ? rew + `<button class="btn acc big" style="width:100%;margin-top:12px" data-act="gNext">${G.phase === 'quiz' && G.quizN+1 >= GCFG.startQuestions ? '🏗️ Verteidigung aufbauen' : 'Weiter'}</button>` : ''}
+    </div></div>`;
+  } else if (G.phase === 'build'){
+    let panel = '';
+    if (G.sel !== null){
+      const pos = SLOTS[G.sel][1] > 330 ? 'at-top' : 'at-bottom';
+      const t = G.towers.find(t => t.slot === G.sel);
+      if (!t){
+        panel = `<div class="gpanel ${pos}"><button class="gx" data-act="gDesel">✕</button><b>Turm bauen</b><div class="gbuild">${TOWER_ORDER.map(k => { const b = TOWERS[k], ok = towerUnlocked(k), afford = G.coins >= b.cost;
+          return `<button class="gb ${ok && afford ? '' : 'off'}" data-act="gBuy" data-k="${k}" ${ok && afford ? '' : 'disabled'}><span>${b.icon}</span><b>${b.name}</b><small>${ok ? b.cost + ' 🪙' : '🔒 Welle ' + b.unlock}</small></button>`; }).join('')}</div></div>`;
+      } else {
+        const b = TOWERS[t.type], s = towerStats(t), uc = upCost(t);
+        panel = `<div class="gpanel ${pos}"><button class="gx" data-act="gDesel">✕</button><b>${b.icon} ${b.name} · Stufe ${t.level}/3</b><small class="gmeta">Schaden ${s.dmg.toFixed(0)} · Reichweite ${s.range.toFixed(0)} · alle ${s.rate.toFixed(2)} s</small>
+          <div class="btnrow">${t.level < 3 ? `<button class="btn acc" data-act="gUp" ${G.coins >= uc ? '' : 'disabled'}>⬆️ Verbessern (${uc} 🪙)</button>` : '<span class="pill">Max. Stufe</span>'}<button class="btn ghost" data-act="gSell">Verkaufen (+${Math.round(t.spent*0.5)} 🪙)</button></div></div>`;
+      }
+    }
+    h = panel || `<div class="ghint">Bauphase: Tippe auf einen Bauplatz (+), um einen Turm zu bauen, oder auf einen Turm, um ihn zu verbessern. Dann oben „Welle starten“.</div>`;
+  }
+  el.innerHTML = h;
+}
+function gameTap(ev){
+  const G = S.play; if (!G || G.phase !== 'build' || G.q) return;
+  const cv = ev.currentTarget, r = cv.getBoundingClientRect();
+  const x = (ev.clientX - r.left) / r.width * GW, y = (ev.clientY - r.top) / r.height * GH;
+  let hit = null;
+  SLOTS.forEach(([sx,sy], i) => { if (Math.hypot(sx-x, sy-y) < 38) hit = i; });
+  G.sel = hit; renderGameUI();
+}
+
+Object.assign(A, {
+  gStart: () => { const m = S.play ? S.play.m : S.modules.find(x => x.id === S.gameMod); if (m) gameStart(m); },
+  gExit: () => { S.play = null; go('game'); },
+  gQuit: () => { const G = S.play; if (G && !G.over){ G.lives = 0; gameOver(); } else { S.play = null; go('game'); } },
+  gSpeed: () => { const G = S.play; if (G){ G.speed = G.speed === 1 ? 2 : 1; renderGameUI(); } },
+  gWave: () => gameStartWave(),
+  gDesel: () => { if (S.play){ S.play.sel = null; renderGameUI(); } },
+  gBuy: d => { const G = S.play, b = TOWERS[d.k]; if (!G || G.sel === null || G.coins < b.cost || !towerUnlocked(d.k)) return;
+    G.coins -= b.cost; G.towers.push({ type:d.k, slot:G.sel, pos:SLOTS[G.sel], level:1, cd:0, spent:b.cost }); renderGameUI(); },
+  gUp: () => { const G = S.play, t = G && G.towers.find(t => t.slot === G.sel); if (!t || t.level >= 3) return; const c = upCost(t); if (G.coins < c) return;
+    G.coins -= c; t.spent += c; t.level++; renderGameUI(); },
+  gSell: () => { const G = S.play, t = G && G.towers.find(t => t.slot === G.sel); if (!t) return; G.coins += Math.round(t.spent*0.5); G.towers = G.towers.filter(x => x !== t); renderGameUI(); },
+  gAns: d => { const G = S.play; if (G && G.q) pickAnswer(G.q, +d.j, G.m); },
+  gCheck: () => { const G = S.play; if (G && G.q) finishAnswer(G.q, G.q.sel.slice(), G.m); },
+  gNext: () => gameCloseQuestion(),
+});
+
 app.addEventListener('change', e => {
   if (e.target.id !== 'restore' || !e.target.files[0]) return;
   const fr = new FileReader();
