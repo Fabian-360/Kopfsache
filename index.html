@@ -180,6 +180,11 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .qrow small{color:var(--muted);font-weight:700;font-size:13px;white-space:nowrap}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
 :root{--gold:#FFC83D}
+.fig{margin:22px 0;padding:0}
+.fig svg{width:100%;height:auto;display:block;border-radius:18px}
+.fig figcaption{font-size:14px;color:var(--muted);text-align:center;margin-top:8px;font-weight:600;line-height:1.4}
+.qfig .fig{margin:16px 0 0}
+.wl .q{word-break:break-word}
 .setcard{background:var(--card);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);margin-bottom:16px}
 .setcard h3{font-size:22px;margin-bottom:6px}
 .setcard p{color:var(--muted);font-weight:600;margin:0 0 16px}
@@ -252,7 +257,11 @@ const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch(e
 const lsSet = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
 const clone = o => JSON.parse(JSON.stringify(o));
 
-function md(t){
+function figHtml(m, id){
+  const f = m && m.figures && m.figures[id]; if (!f) return '';
+  return '<figure class="fig">' + f.svg + (f.caption ? '<figcaption>' + esc(f.caption) + '</figcaption>' : '') + '</figure>';
+}
+function md(t, m){
   const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`(.+?)`/g,'<code>$1</code>');
   let html='', list=false, para=[];
   const flushP=()=>{ if(para.length){ html+='<p>'+inline(para.join(' '))+'</p>'; para=[]; } };
@@ -260,6 +269,8 @@ function md(t){
   for (const raw of String(t||'').split('\n')){
     const l = raw.trim();
     if (!l){ flushP(); closeL(); continue; }
+    const fm = l.match(/^\[\[fig:([\w-]+)\]\]$/);
+    if (fm){ flushP(); closeL(); html += figHtml(m, fm[1]); continue; }
     if (l.startsWith('## ')){ flushP(); closeL(); html+='<h3>'+inline(l.slice(3))+'</h3>'; continue; }
     if (l.startsWith('> ')){ flushP(); closeL(); html+='<div class="merke">'+inline(l.slice(2))+'</div>'; continue; }
     if (/^[-•] /.test(l)){ flushP(); if(!list){ html+='<ul>'; list=true; } html+='<li>'+inline(l.slice(2))+'</li>'; continue; }
@@ -299,14 +310,193 @@ function streak(){
 }
 
 /* ---------- question building (anti-auswendig) ---------- */
-function buildQ(q){
+/* ---------- Rechenaufgaben mit Zufallszahlen ---------- */
+const ri = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const r3 = x => (Math.round(x*1000)/1000).toFixed(3);
+const root = n => { const s = Math.sqrt(n); return Number.isInteger(s) ? String(s) : '√' + n; };
+const vec = v => '(' + v.join(', ') + ')';
+function wrongs(correct, cands, fallback){
+  const out = [], c = String(correct);
+  for (const x of shuffle(cands.map(String))) { if (x !== c && !out.includes(x)) out.push(x); if (out.length === 3) break; }
+  let k = 1;
+  while (out.length < 3 && fallback) { const x = String(fallback(k++)); if (x !== c && !out.includes(x)) out.push(x); if (k > 50) break; }
+  return out;
+}
+function bitsExplain(n){
+  const parts = []; for (let p = 128; p >= 1; p /= 2) if (n & p) parts.push(p);
+  return parts.join(' + ') + ' = ' + n;
+}
+const GEN = {
+  bin2dec: { title:'Rechenaufgabe: Binärzahl → Dezimalzahl', make(){
+    const n = ri(5, 250), b = n.toString(2).padStart(8,'0');
+    const rev = parseInt(b.split('').reverse().join(''), 2);
+    return { prompt:`Welche Dezimalzahl entspricht der Binärzahl ${b}?`, correct:String(n),
+      wrong: wrongs(n, [n+1, n-1, rev, n+2, n^16, n^2, n+8, n-8].filter(x => x >= 0), k => n + 3*k),
+      explain:`${b}: ${bitsExplain(n)}.` }; } },
+  dec2bin: { title:'Rechenaufgabe: Dezimalzahl → Binärzahl', make(){
+    const n = ri(5, 250), b = x => (x & 255).toString(2).padStart(8,'0');
+    const rev = b(n).split('').reverse().join('');
+    return { prompt:`Wie lautet die Zahl ${n} als 8-stellige Binärzahl?`, correct:b(n),
+      wrong: wrongs(b(n), [b(n+1), b(n-1), rev, b(n^8), b(n^32), b(n^1)], k => b(n + 2*k)),
+      explain:`${bitsExplain(n)} → ${b(n)}.` }; } },
+  ascii: { title:'Rechenaufgabe: ASCII-Werte', make(){
+    const kind = ri(0,2);
+    let ch, code;
+    if (kind === 0) { code = ri(65, 90); } else if (kind === 1) { code = ri(97, 122); } else { code = ri(48, 57); }
+    ch = String.fromCharCode(code);
+    if (Math.random() < 0.5) {
+      return { prompt:`Welchen ASCII-Wert (dezimal) hat das Zeichen „${ch}“?`, correct:String(code),
+        wrong: wrongs(code, [code+1, code-1, code+32, code-32, code+2], k => code + 3 + k),
+        explain:`A = 65 … Z = 90, a = 97 … z = 122, „0“ = 48 … „9“ = 57. „${ch}“ = ${code}.` };
+    }
+    const alt = [code+1, code-1, code+32, code-32, code+2].filter(c => c >= 33 && c <= 126).map(c => String.fromCharCode(c));
+    return { prompt:`Welches Zeichen hat den ASCII-Wert ${code}?`, correct:ch,
+      wrong: wrongs(ch, alt, k => String.fromCharCode(33 + ((code + 5*k) % 90))),
+      explain:`A = 65 … Z = 90, a = 97 … z = 122, „0“ = 48 … „9“ = 57. ${code} = „${ch}“.` };
+  } },
+  mod: { title:'Rechenaufgabe: MOD (Rest der Division)', make(){
+    if (Math.random() < 0.5) {
+      const n = ri(11, 99), r = n % 2;
+      const opts = ['0 → gerade', '1 → ungerade', '0 → ungerade', '1 → gerade'];
+      const c = r === 0 ? opts[0] : opts[1];
+      return { prompt:`EVEN-OR-ODD(${n}): Was ergibt ${n} MOD 2 – und welche Ausgabe folgt?`, correct:c, wrong: opts.filter(o => o !== c),
+        explain:`${n} : 2 = ${Math.floor(n/2)} Rest ${r} → ${r === 0 ? '"EVEN" (gerade)' : '"ODD" (ungerade)'}.` };
+    }
+    const b = ri(3, 9), a = ri(b+1, 60), r = a % b;
+    return { prompt:`Was ergibt ${a} MOD ${b}?`, correct:String(r),
+      wrong: wrongs(r, [Math.floor(a/b), r+1, b-r, r-1, a-b].filter(x => x >= 0), k => r + k + 1),
+      explain:`${a} : ${b} = ${Math.floor(a/b)} Rest ${r}. MOD liefert den Rest.` };
+  } },
+  linsearch: { title:'Rechenaufgabe: Lineare Suche', make(){
+    const n = ri(7, 10), set = new Set(); while (set.size < n) set.add(ri(1, 99));
+    const A = [...set].sort((a,b) => a-b);
+    const missing = Math.random() < 0.2;
+    let x, idx;
+    if (missing) { do { x = ri(1, 99); } while (set.has(x)); idx = 'NOT-FOUND'; }
+    else { idx = ri(0, n-1); x = A[idx]; }
+    const c = String(idx);
+    const cands = missing ? ['0', String(n), String(n-1), '−1'] : [idx+1, idx-1, x, 'NOT-FOUND', n].filter(v => v !== -1).map(String);
+    return { prompt:`LINEAR-SEARCH(A, ${n}, ${x}) mit A = [${A.join(', ')}]. Was gibt der Algorithmus zurück?`, correct:c,
+      wrong: wrongs(c, cands, k => String(n + k)),
+      explain: missing ? `${x} kommt nicht vor → answer bleibt NOT-FOUND.` : `${x} steht an Index ${idx} (Zählung ab 0) → answer = ${idx}.` };
+  } },
+  binfirst: { title:'Rechenaufgabe: Binäre Suche – Mitte', make(){
+    const n = ri(6, 21), M = Math.floor((n-1)/2);
+    const set = new Set(); while (set.size < n) set.add(ri(1, 99));
+    const A = [...set].sort((a,b) => a-b);
+    if (Math.random() < 0.5)
+      return { prompt:`BINARY-SEARCH auf einer sortierten Liste mit n = ${n} Elementen: Welcher Index M wird zuerst geprüft?`, correct:String(M),
+        wrong: wrongs(M, [Math.ceil((n-1)/2) === M ? M+1 : Math.ceil((n-1)/2), Math.floor(n/2) === M ? M-1 : Math.floor(n/2), n-1, 0, M+2], k => M + k + 2),
+        explain:`L = 0, R = ${n-1} → M = 0 + floor((${n-1} − 0)/2) = ${M}.` };
+    return { prompt:`BINARY-SEARCH in A = [${A.join(', ')}]: Welcher Wert wird zuerst mit x verglichen?`, correct:String(A[M]),
+      wrong: wrongs(A[M], [A[M+1], A[M-1], A[0], A[n-1], A[Math.floor(n/2)]].filter(v => v !== undefined)),
+      explain:`n = ${n}, L = 0, R = ${n-1} → M = floor(${n-1}/2) = ${M} → A[${M}] = ${A[M]}.` };
+  } },
+  bool: { title:'Rechenaufgabe: Bedingungen (True/False)', make(){
+    const points = ri(0, 20), names = ['Luca','Lea','Ben','Mia'], player = rand(names);
+    const mk = () => {
+      const k = ri(0, 20), nm = rand(names), t = ri(0, 5);
+      const parts = [
+        [`points > ${k}`, points > k], [`points <= ${k}`, points <= k], [`points == ${k}`, points === k], [`points != ${k}`, points !== k],
+        [`player == "${nm}"`, player === nm], [`player != "${nm}"`, player !== nm]];
+      const a = rand(parts), b = rand(parts);
+      if (t === 0) return [a[0], a[1]];
+      if (t === 1) return [`${a[0]} and ${b[0]}`, a[1] && b[1]];
+      if (t === 2) return [`${a[0]} or ${b[0]}`, a[1] || b[1]];
+      if (t === 3) return [`not ${a[0]}`, !a[1]];
+      return [`${a[0]} and not ${b[0]}`, a[1] && !b[1]];
+    };
+    const want = Math.random() < 0.7;
+    let good = null; const bad = []; let tries = 0;
+    while ((good === null || bad.length < 3) && tries++ < 400) {
+      const [e, v] = mk();
+      if (v === want && good === null) good = e;
+      else if (v !== want && !bad.includes(e) && bad.length < 3) bad.push(e);
+    }
+    return { prompt:`Gegeben: points = ${points} und player = "${player}". Welcher Ausdruck ergibt ${want ? 'True' : 'False'}?`, correct:good, wrong:bad, inverse:!want,
+      explain:`„${good}“ ergibt ${want ? 'True' : 'False'}. Bei and müssen beide Teile stimmen, bei or reicht einer, not dreht um.` };
+  } },
+  vecadd: { title:'Rechenaufgabe: Vektoren addieren', make(){
+    const u = [ri(-3,5), ri(-3,5)], v = [ri(-3,5), ri(-3,5)], s = [u[0]+v[0], u[1]+v[1]];
+    return { prompt:`u = ${vec(u)}, v = ${vec(v)}. Was ist u + v?`, correct:vec(s),
+      wrong: wrongs(vec(s), [vec([u[0]+v[1], u[1]+v[0]]), vec([u[0]-v[0], u[1]-v[1]]), vec([u[0]*v[0], u[1]*v[1]]), vec([s[0]+1, s[1]]), vec([s[1], s[0]])], k => vec([s[0]+k, s[1]-k])),
+      explain:`Komponentenweise: (${u[0]} + ${v[0]}, ${u[1]} + ${v[1]}) = ${vec(s)}.` }; } },
+  vecscale: { title:'Rechenaufgabe: Vektoren skalieren', make(){
+    const k = ri(2,4), u = [ri(-3,5), ri(-3,5)], s = [k*u[0], k*u[1]];
+    return { prompt:`Was ist ${k} · ${vec(u)}?`, correct:vec(s),
+      wrong: wrongs(vec(s), [vec([k*u[0], u[1]]), vec([u[0]+k, u[1]+k]), vec([u[0], k*u[1]]), vec([k+u[0], k*u[1]])], j => vec([s[0]+j, s[1]])),
+      explain:`Jede Komponente mal ${k}: (${k}·${u[0]}, ${k}·${u[1]}) = ${vec(s)}.` }; } },
+  vecdist: { title:'Rechenaufgabe: Euklidischer Abstand', make(){
+    let dx, dy; do { dx = ri(0,4); dy = ri(0,4); } while (dx === 0 && dy === 0);
+    const u = [ri(-2,4), ri(-2,4)], v = [u[0] + (Math.random()<.5?dx:-dx), u[1] + (Math.random()<.5?dy:-dy)];
+    const d2 = dx*dx + dy*dy;
+    return { prompt:`Wie groß ist der euklidische Abstand zwischen ${vec(u)} und ${vec(v)}?`, correct:root(d2),
+      wrong: wrongs(root(d2), [String(dx+dy), root(dx+dy), String(d2), root(d2+2), String(Math.abs(dx-dy)), root(d2-1)].filter(x => x !== '√0' && x !== '0'), k => root(d2 + 2*k + 1)),
+      explain:`d = √((${u[0]} − ${v[0]})² + (${u[1]} − ${v[1]})²) = √(${dx*dx} + ${dy*dy}) = ${root(d2)}.` }; } },
+  logz: { title:'Rechenaufgabe: Logistische Regression', make(){
+    const nz = () => { let x; do { x = ri(-3,3); } while (x === 0); return x; };
+    const w0 = ri(-6,6), w1 = nz(), w2 = nz(), x1 = ri(0,5), x2 = ri(0,5), z = w0 + w1*x1 + w2*x2;
+    const head = `w₀ = ${w0}, w₁ = ${w1}, w₂ = ${w2}; Eingabe x₁ = ${x1}, x₂ = ${x2}.`;
+    const calc = `z = ${w0} + ${w1}·${x1} + ${w2}·${x2} = ${z}`;
+    if (Math.random() < 0.55)
+      return { prompt:`${head} Wie groß ist z = w₀ + w₁·x₁ + w₂·x₂?`, correct:String(z),
+        wrong: wrongs(z, [z - w0, z + 2*w0 === z ? z+1 : z - 2*w0, w0 + w1 + w2 + x1 + x2, w0 + w1*x2 + w2*x1, -z, z+1], k => z + k + 1),
+        explain:`${calc}.` };
+    const cls = z >= 0 ? 1 : 0;
+    const c = `z = ${z} → Klasse ${cls}`;
+    return { prompt:`${head} Welche Klasse sagt die logistische Regression vorher (Schwellenwert 0.5)?`, correct:c,
+      wrong: wrongs(c, [`z = ${z} → Klasse ${1-cls}`, `z = ${z-w0} → Klasse ${z-w0 >= 0 ? 1 : 0}`, `z = ${-z} → Klasse ${-z >= 0 ? 1 : 0}`, `z = ${z+2} → Klasse ${1-cls}`], j => `z = ${z+j+2} → Klasse ${(z+j+2) >= 0 ? 1 : 0}`),
+      explain:`${calc}. sigmoid(z) ≥ 0.5 genau dann, wenn z ≥ 0 → Klasse ${cls}.` };
+  } },
+  sigclass: { title:'Rechenaufgabe: Sigmoid & Klassenlabel', make(){
+    const z = rand([-4,-3,-2,-1,-0.5,0.5,1,2,3,4]), p = 1/(1+Math.exp(-z)), cls = p >= 0.5 ? 1 : 0;
+    const ps = p.toFixed(2), qs = (1-p).toFixed(2);
+    const c = `sigmoid(${z}) ≈ ${ps} → Klasse ${cls}`;
+    return { prompt:`Die gewichtete Summe ist z = ${z}. Was liefert die logistische Regression?`, correct:c,
+      wrong: wrongs(c, [`sigmoid(${z}) ≈ ${ps} → Klasse ${1-cls}`, `sigmoid(${z}) ≈ ${qs} → Klasse ${1-cls}`, `sigmoid(${z}) ≈ ${qs} → Klasse ${cls}`, `sigmoid(${z}) = ${z} → Klasse ${cls}`]),
+      explain:`sigmoid(${z}) = 1 / (1 + e^(${-z})) ≈ ${ps}. ${cls ? '≥' : '<'} 0.5 → Klasse ${cls}. Merke: z ≥ 0 ⇔ Klasse 1.` };
+  } },
+  knnvote: { title:'Rechenaufgabe: k-NN Mehrheitsentscheid', make(){
+    const k = rand([3,5,7]);
+    let labs; do { labs = Array.from({length:9}, () => Math.random() < 0.5 ? 'rot' : 'blau'); } while (labs.slice(0,k).filter(x => x==='rot').length === labs.slice(k).filter(x => x==='rot').length);
+    const d = Array.from({length:9}, (_, i) => (0.3 + i*0.25 + Math.random()*0.2).toFixed(2));
+    const first = labs.slice(0,k), nr = first.filter(x => x==='rot').length, win = nr*2 > k ? 'rot' : 'blau';
+    const all = labs.filter(x => x==='rot').length*2 > 9 ? 'rot' : 'blau';
+    const cw = win==='rot'?nr:k-nr, c = `${win} (${cw} von ${k} Nachbarn)`;
+    const other = win==='rot'?'blau':'rot';
+    return { prompt:`k-NN mit k = ${k}. Die Trainingspunkte, nach Abstand sortiert: ${labs.map((l,i) => `${d[i]} ${l}`).join(' · ')}. Welche Klasse wird vorhergesagt?`, correct:c,
+      wrong: wrongs(c, [`${other} (${k-cw} von ${k} Nachbarn)`, `${other} (${cw} von ${k} Nachbarn)`, `${win} (${k-cw} von ${k} Nachbarn)`, `${win} (${Math.min(k, cw+1) === cw ? cw-1 : cw+1} von ${k} Nachbarn)`]),
+      explain:`Die ${k} nächsten Nachbarn sind: ${first.join(', ')} → ${nr}× rot, ${k-nr}× blau → ${win}.` };
+  } },
+  cm: { title:'Rechenaufgabe: Accuracy, Precision, Recall, F1', make(){
+    const TP = ri(5,40), FN = ri(2,20), FP = ri(2,20), TN = ri(5,40);
+    const acc = (TP+TN)/(TP+TN+FP+FN), rec = TP/(TP+FN), pre = TP/(TP+FP), f1 = 2*pre*rec/(pre+rec), spec = TN/(TN+FP), npv = TN/(TN+FN);
+    const which = rand(['Accuracy','Recall','Precision','F1-Score']);
+    const val = { 'Accuracy':acc, 'Recall':rec, 'Precision':pre, 'F1-Score':f1 }[which];
+    const formula = { 'Accuracy':`(TP + TN) / alle = (${TP} + ${TN}) / ${TP+TN+FP+FN}`, 'Recall':`TP / (TP + FN) = ${TP} / ${TP+FN}`, 'Precision':`TP / (TP + FP) = ${TP} / ${TP+FP}`, 'F1-Score':`2 · ${r3(pre)} · ${r3(rec)} / (${r3(pre)} + ${r3(rec)})` }[which];
+    return { prompt:`Konfusionsmatrix: TP = ${TP}, FN = ${FN}, FP = ${FP}, TN = ${TN}. Wie groß ist ${{'Accuracy':'die Accuracy','Recall':'der Recall','Precision':'die Precision','F1-Score':'der F1-Score'}[which]}?`, correct:r3(val),
+      wrong: wrongs(r3(val), [acc, rec, pre, f1, spec, npv, (pre+rec)/2].map(r3), k => r3(Math.min(0.999, val + 0.037*k))),
+      explain:`${which} = ${formula} ≈ ${r3(val)}. (Accuracy ${r3(acc)}, Recall ${r3(rec)}, Precision ${r3(pre)}, F1 ${r3(f1)})` };
+  } },
+};
+const qLabel = q => q.gen ? (GEN[q.gen] ? GEN[q.gen].title + ' (wechselnde Zahlen)' : 'Rechenaufgabe') : ((q.prompts||[])[0] || '');
+
+function buildQ(q, m){
+  const fig = q.fig && m && m.figures && m.figures[q.fig] ? q.fig : null;
+  if (q.gen && GEN[q.gen]) {
+    let g; try { g = GEN[q.gen].make(); } catch(e) { g = null; }
+    if (g && g.correct != null && g.wrong && g.wrong.length) {
+      const options = shuffle([String(g.correct), ...g.wrong.slice(0,3).map(String)]);
+      return { prompt:g.prompt, options, answer: options.indexOf(String(g.correct)), inverse:!!g.inverse, explain: g.explain || q.explain || '', fig, gen:true };
+    }
+  }
   const corr = q.correct||[], wr = q.wrong||[];
   const inverse = Array.isArray(q.notPrompts) && q.notPrompts.length && corr.length>=3 && wr.length && Math.random()<0.3;
   let prompt, answer, others;
   if (inverse){ prompt = rand(q.notPrompts); answer = rand(wr); others = pick(corr,3); }
   else { prompt = rand(q.prompts && q.prompts.length ? q.prompts : ['?']); answer = rand(corr); others = pick(wr,3); }
   const options = shuffle([answer, ...others]);
-  return { prompt, options, answer: options.indexOf(answer), inverse:!!inverse, explain: q.explain||'' };
+  return { prompt, options, answer: options.indexOf(answer), inverse:!!inverse, explain: q.explain||'', fig };
 }
 function selectQs(m, mode, n){
   n = n || 10;
@@ -326,7 +516,7 @@ function selectQs(m, mode, n){
 }
 function promptHtml(b){
   let p = esc(b.prompt);
-  if (b.inverse) p = p.replace(/\b(NICHT|FALSCH|KEIN|KEINE)\b/g,'<span class="not">$1</span>');
+  if (b.inverse) p = p.replace(/\b(NICHT|FALSCH|False|KEIN|KEINE)\b/g,'<span class="not">$1</span>');
   return p;
 }
 
@@ -470,9 +660,9 @@ function vLearn(){
 
 function newLessonQs(){
   const m = mod(); const qs = (m.questions||[]).filter(q => q.lesson===S.lessonId);
-  S.lq = pick(qs, 3).map(q => ({ qid:q.id, b:buildQ(q), chosen:null }));
+  S.lq = pick(qs, 3).map(q => ({ qid:q.id, b:buildQ(q, m), chosen:null }));
 }
-function qBlock(item, i, act, label){
+function qBlock(item, i, act, label, m, showFig){
   const b = item.b, answered = item.chosen!==null;
   const opts = b.options.map((o,j) => {
     let cls = '';
@@ -482,9 +672,11 @@ function qBlock(item, i, act, label){
   let fb = '';
   if (answered){
     const ok = item.chosen===b.answer;
-    fb = `<div class="fb ${ok?'ok':'bad'}"><b>${ok ? rand(['Richtig! 🎉','Genau so! ✨','Sitzt! 💪','Stark! 🙌']) : 'Nicht ganz.'}</b>${!ok?`Richtig wäre: <strong>${esc(b.options[b.answer])}</strong>${b.explain?'<br>':''}`:''}${esc(b.explain)}</div>`;
+    if (!item.praise) item.praise = rand(['Richtig! 🎉','Genau so! ✨','Sitzt! 💪','Stark! 🙌']);
+    fb = `<div class="fb ${ok?'ok':'bad'}"><b>${ok ? item.praise : 'Nicht ganz.'}</b>${!ok?`Richtig wäre: <strong>${esc(b.options[b.answer])}</strong>${b.explain?'<br>':''}`:''}${esc(b.explain)}</div>`;
   }
-  return `<div class="qcard"><div class="qhead">${label}</div><div class="qtext">${promptHtml(b)}</div><div class="opts ${answered?'locked':''}">${opts}</div>${fb}</div>`;
+  const fig = showFig && answered && b.fig ? `<div class="qfig">${figHtml(m, b.fig)}</div>` : '';
+  return `<div class="qcard"><div class="qhead">${label}${b.gen ? ' · 🎲 neue Zahlen' : ''}</div><div class="qtext">${promptHtml(b)}</div><div class="opts ${answered?'locked':''}">${opts}</div>${fb}${fig}</div>`;
 }
 
 function vLesson(){
@@ -494,9 +686,9 @@ function vLesson(){
   const allAnswered = S.lq.length && S.lq.every(x => x.chosen!==null);
   return `<div class="wrap fade" style="${accStyle(m)}">
     <div class="top">${backBtn('learn','Alle Texte')}<span class="spacer"></span>${coinPill()}</div>
-    <article class="article"><h1>${esc(l.title)}</h1>${md(l.text)}</article>
+    <article class="article"><h1>${esc(l.title)}</h1>${md(l.text, m)}</article>
     ${S.lq.length ? `<div class="sect"><h2>🤔 Hast du's verstanden?</h2></div>
-      ${S.lq.map((it,i) => qBlock(it, i, 'lAns', 'Verständnisfrage '+(i+1))).join('')}` : ''}
+      ${S.lq.map((it,i) => qBlock(it, i, 'lAns', 'Verständnisfrage '+(i+1), m, false)).join('')}` : ''}
     <div class="btnrow" style="margin-top:18px">
       ${S.lq.length && allAnswered ? `<button class="btn ghost" data-act="moreLq">🔄 Andere Fragen</button>` : ''}
       <button class="btn acc" data-act="markRead">${done ? '✓ Gelesen – weiter' : 'Als gelesen markieren ✓'}</button>
@@ -520,7 +712,7 @@ function vTest(){
     </div>
     <div class="prog"><div class="bar"><i style="width:${(T.idx + (answered?1:0))/n*100}%"></i></div><b>${T.idx+1} / ${n}</b></div>
     <div class="dots">${dots}</div>
-    ${qBlock(it, T.idx, 'tAns', 'Frage '+(T.idx+1))}
+    ${qBlock(it, T.idx, 'tAns', 'Frage '+(T.idx+1), m, true)}
     ${coinUi}
     ${answered ? `<div class="sticky"><button class="btn acc big" data-act="next">${T.idx+1<n ? 'Weiter →' : 'Auswertung 🏁'}</button></div>` : ''}
   </div>`;
@@ -566,7 +758,7 @@ function vWorkbook(){
       ${[['all','Alle'],['open','Offen'],['ok','Richtig'],['bad','Falsch']].map(([k,l]) => `<button class="f ${S.filter===k?'on':''}" data-act="filter" data-f="${k}">${l}</button>`).join('')}
     </div>
     ${shown.length ? shown.map(q => { const s = status(m,q), e = P.q[key(m,q)];
-      return `<div class="qrow"><span class="d ${s==='r'?'ok':s==='w'?'bad':''}"></span><span class="t">${esc((q.prompts||[])[0]||'')}</span><small>${e ? `✓${e.r} · ✗${e.w}` : esc(lessonTitle(q.lesson))}</small></div>`; }).join('')
+      return `<div class="qrow"><span class="d ${s==='r'?'ok':s==='w'?'bad':''}"></span><span class="t">${esc(qLabel(q))}</span><small>${e ? `✓${e.r} · ✗${e.w}` : esc(lessonTitle(q.lesson))}</small></div>`; }).join('')
       : `<div class="empty">Hier ist gerade nichts.</div>`}
   </div>`;
 }
@@ -599,7 +791,7 @@ function vStack(){
     <p class="h-sub">${qs.length} ${qs.length===1?'Karte':'Karten'} in diesem Stapel</p>
     <button class="btn big" data-act="test" data-mode="${mode}" ${qs.length?'':'disabled'}>${k==='bad'?'Falsche üben':k==='ok'?'Richtige wiederholen':'Unbeantwortete üben'} (${Math.min(10,qs.length)}) →</button>
     ${qs.length ? `<div class="cardgrid">${qs.map(q => { const e = P.q[key(m,q)];
-      return `<div class="kcard ${k}">${esc((q.prompts||[])[0]||'')}<small>${e ? `✓ ${e.r}× richtig · ✗ ${e.w}× falsch` : esc(lessonTitle(q.lesson))}</small></div>`; }).join('')}</div>`
+      return `<div class="kcard ${k}">${esc(qLabel(q))}<small>${e ? `✓ ${e.r}× richtig · ✗ ${e.w}× falsch` : esc(lessonTitle(q.lesson))}</small></div>`; }).join('')}</div>`
       : `<div class="empty" style="margin-top:18px">Dieser Stapel ist gerade leer.</div>`}
   </div>`;
 }
@@ -656,7 +848,7 @@ function go(view){ S.view = view; S.confirmQuit = false; render(); window.scroll
 function startTest(mode){
   const m = mod(); if (!m) return;
   const qs = selectQs(m, mode, 10); if (!qs.length) return;
-  S.test = { modId:m.id, mode, items: qs.map(q => ({ qid:q.id, b:buildQ(q), chosen:null })), idx:0, saved:false };
+  S.test = { modId:m.id, mode, items: qs.map(q => ({ qid:q.id, b:buildQ(q, m), chosen:null })), idx:0, saved:false };
   go('test');
 }
 const A = {
