@@ -1,10 +1,11 @@
 // Kopfsache – Offline-Speicher
-const V = 'kopfsache-v43';
+const V = 'kopfsache-v44';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'touch-icon-2.png', 'app-icon-192-2.png', 'app-icon-512-2.png', 'content.json', 'py-worker.js'];
 const PYC = 'kopfsache-python';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache:'reload' = am Browser-Zwischenspeicher vorbei, damit eine neue Version wirklich frische Dateien bekommt
+  e.waitUntil(caches.open(V).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== V && k !== PYC).map(k => caches.delete(k)))).then(() => self.clients.claim()));
@@ -30,11 +31,10 @@ self.addEventListener('fetch', e => {
   // Schriften: einmal laden, dann aus dem Speicher
   if (url.host === 'fonts.googleapis.com' || url.host === 'fonts.gstatic.com') {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
-      const copy = res.clone(); caches.open(V).then(c => c.put(req, copy)); return res;
+      if (res.ok || res.type === 'opaque'){ const copy = res.clone(); caches.open(V).then(c => c.put(req, copy)); } return res;
     })));
     return;
   }
-  // App selbst: sofort aus dem Speicher, im Hintergrund aktualisieren
   // App-Seite: zuerst frisch aus dem Netz (Updates sofort), offline aus dem Speicher
   if (url.origin === location.origin && req.mode === 'navigate') {
     e.respondWith(fetch(req, { cache: 'no-cache' }).then(res => {
