@@ -77,13 +77,19 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .mcard{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);text-align:left;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;transition:transform .15s}
 .mcard:active{transform:scale(.98)}
 .mcard{cursor:pointer;-webkit-tap-highlight-color:transparent}
-.mtop{display:flex;align-items:center;gap:12px}
-.calw{position:relative;display:flex;align-items:center;gap:10px;margin-left:auto;padding:4px 6px 4px 4px;border-radius:14px;cursor:pointer}
+.mtop{display:flex;align-items:flex-start;gap:12px}
+.upd{flex:1;min-width:0;display:flex;align-items:center;gap:10px;line-height:1.2}
+.updic{flex:none;width:56px;height:56px;border-radius:18px;background:var(--accsoft);display:grid;place-items:center;font-size:28px}
+.updt{min-width:0}
+@media (max-width:900px){.updic{width:46px!important;height:46px!important;font-size:23px!important;border-radius:15px!important}.mtop{gap:8px!important}.upd{gap:8px!important}.calw{max-width:96px!important}.cd{font-size:12px!important}.cd small{font-size:10px!important}}
+.upd b{display:block;font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap}.upd.fresh b{color:var(--gold)}
+.upd small{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;font-weight:700;color:var(--ink);margin-top:2px}
+.calw{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;margin-left:auto;flex:none;max-width:132px;text-align:center;padding:4px 6px 4px 4px;border-radius:14px;cursor:pointer}
 .calw:active{background:rgba(255,255,255,.05)}
 .cal{width:52px;border-radius:12px;overflow:hidden;background:#fff;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.35);flex:none;line-height:1}
 .cal i{display:block;background:var(--acc);color:#fff;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 0}
 .cal b{display:block;color:#111;font-size:24px;font-weight:800;padding:5px 0 6px}
-.cd{font-weight:800;font-size:15px;color:var(--ink);line-height:1.15;text-align:right}.cd small{display:block;color:var(--muted);font-size:11px;font-weight:700}
+.cd{font-weight:800;font-size:14px;color:var(--ink);line-height:1.15;text-align:center}.cd small{display:block;color:var(--muted);font-size:11px;font-weight:700}
 .cd.hot{color:var(--acc)}
 .exin{display:block;width:100%;margin-top:6px;background:var(--card2);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:16px;font-weight:700;-webkit-appearance:none;appearance:none;min-height:48px;box-sizing:border-box}
 .exin::-webkit-calendar-picker-indicator{filter:invert(1)}
@@ -382,7 +388,8 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 .gamecard .gc{margin-top:auto;background:rgba(0,0,0,.35);padding:9px 15px;border-radius:999px;font-weight:800;font-size:17px;color:var(--gold)}
 .htiles{display:flex;flex-direction:column;gap:12px}
 .htile{flex:1;min-height:58px;background:linear-gradient(135deg,#E10600,#A30000);border-radius:18px;box-shadow:0 8px 24px rgba(225,6,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#fff;transition:transform .15s}
-.htile b{font-size:19px;font-weight:800;display:flex;align-items:center;gap:6px}.htile small{font-size:12px;color:rgba(255,255,255,.85);font-weight:700}
+.htile b{font-size:19px;font-weight:800;display:flex;align-items:center;gap:6px}
+.htile b.big{font-size:32px;line-height:1}.htile small{font-size:12px;color:rgba(255,255,255,.85);font-weight:700}
 @media (max-width:640px){.homehead{grid-template-columns:1fr}.hright{grid-column:auto;grid-template-columns:1fr}.htiles{flex-direction:row}.gamecard .gc{margin-top:10px}}
 .gamebar .gi{font-size:40px}
 .gamebar .gt{flex:1;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:26px;font-weight:800;line-height:1.1}
@@ -416,7 +423,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '35';
+const APP_VERSION = '37';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1022,10 +1029,16 @@ function openExamEditor(mid){
     <div class="edfoot">${custom && (m.examDate || m.examInfo) ? '<button class="btn ghost" data-ex="reset">↩️ Original wiederherstellen</button>' : ''}<button class="btn danger" data-ex="clear">🗑️ Prüfung entfernen</button></div>
   </div>`;
 }
+function updBox(m){
+  if (!m.lastUpdate) return '';
+  const [y,mo,d] = String(m.lastUpdate).split('-').map(Number), dt = new Date(y, mo-1, d), t = new Date(); t.setHours(0,0,0,0);
+  const n = Math.round((t - dt) / DAY), when = n <= 0 ? 'heute' : n === 1 ? 'gestern' : `${String(d).padStart(2,'0')}.${String(mo).padStart(2,'0')}.`;
+  return `<div class="upd${n <= 2 ? ' fresh' : ''}"><span class="updic">🔄</span><span class="updt"><b>Stoff · ${when}</b><small>${esc(m.updateNote || '')}</small></span></div>`;
+}
 function modCard(m){
   const st = stats(m), last = P.tests.filter(t => t.m===m.id && t.mode==='mix').slice(-1)[0], nd = dueQs(m).length;
   return `<div class="mcard fade" role="button" tabindex="0" style="${accStyle(m)}" data-act="openMod" data-id="${esc(m.id)}">
-      <div class="mtop"><div class="memo">${esc(m.emoji||'📘')}</div>${examCal(m)}</div>
+      <div class="mtop"><div class="memo">${esc(m.emoji||'📘')}</div>${updBox(m)}${examCal(m)}</div>
       <h2>${esc(m.title)}</h2>
       ${m.subtitle ? `<p>${esc(m.subtitle)}</p>` : ''}
       <div class="bar"><i style="width:${st.pOk}%;background:var(--ok)"></i><i style="width:${st.pBad}%;background:var(--bad)"></i></div>
@@ -1056,8 +1069,8 @@ function vHome(){
       <button class="gamecard" data-act="game"><span class="gi">🏰</span><b>Study Defense</b><small>Wissen ist die einzige Währung</small><span class="gc">Rekord: Welle ${bestWaveAll()}</span></button>
       <div class="htiles">
         <button class="htile" data-act="welcome"><b>Start</b></button>
-        <div class="htile"><b>🔥</b><small>Tage in Folge: ${streak()}</small></div>
-        <button class="htile" data-act="settings" aria-label="Einstellungen"><b>⚙️</b><small>Einstellungen</small></button>
+        <div class="htile"><b class="big">🔥</b><small>Tage in Folge: ${streak()}</small></div>
+        <button class="htile" data-act="settings" aria-label="Einstellungen"><b class="big">⚙️</b><small>Einstellungen</small></button>
       </div>
       </div>
     </div>
