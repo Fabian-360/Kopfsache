@@ -269,7 +269,7 @@ body.edopen{overflow:hidden}
 .gwrap{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;box-sizing:border-box;padding:calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
 .gstage{--side:132px;--cw:min(calc(100vw - 24px - var(--side) - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100vh - 230px) * 1.5625));margin:auto;display:flex;flex-direction:column;width:calc(var(--cw) + var(--side) + 12px)}
 @supports (height:100dvh){.gstage{--cw:min(calc(100vw - 24px - var(--side) - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100dvh - 230px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 1.5625))}}
-.gtop{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.gtop{display:flex;align-items:center;gap:10px;margin-bottom:12px;min-height:48px}
 .gmain{display:flex;gap:12px;align-items:stretch}
 .gside{width:var(--side);flex:none;display:flex;flex-direction:column;gap:10px}
 .gh{flex:1;min-height:0;background:#000;border:2px solid var(--acc);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px;text-align:center}
@@ -312,7 +312,10 @@ html{scrollbar-width:none}html::-webkit-scrollbar,body::-webkit-scrollbar{displa
 .gmenu{display:flex;flex-direction:column;gap:10px;max-width:420px;margin:0 auto}
 .gmenu .btn{width:100%;justify-content:center}
 .savecard{border:2px solid var(--gold)}
-.gmodal{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top)) 14px 40px}
+.gmodal{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.72);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:calc(16px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom))}
+.gmodal>.gcard{margin:auto 0}
+html.gmopen,html.gmopen body{overflow:hidden;overscroll-behavior:none}
+#gwave{display:flex;align-items:center;min-height:44px}
 .gcard{width:100%;max-width:760px;background:var(--bg);border-radius:26px;padding:16px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
 .gcard .qcard{margin-bottom:0;box-shadow:none}
 .gcard.center{text-align:center;padding:30px 20px}
@@ -505,7 +508,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '39';
+const APP_VERSION = '40';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1623,7 +1626,7 @@ addEventListener('resize', () => requestAnimationFrame(fitHomeHead));
     bar.classList.add('on'); clearTimeout(tm); tm = setTimeout(() => bar.classList.remove('on'), 700);
   }, { passive:true });
 })();
-function go(view){ S.view = view; S.confirmQuit = false; render(); window.scrollTo(0,0); }
+function go(view){ document.documentElement.classList.remove('gmopen'); S.view = view; S.confirmQuit = false; render(); window.scrollTo(0,0); }
 
 /* ---------- actions ---------- */
 function pickAnswer(it, j, m){
@@ -2026,6 +2029,9 @@ function gameLoop(ts){
     for (let k = 0; k < G.speed && G.phase === 'wave' && !G.paused; k++) gameStep(G, dtReal);
   }
   // Effekte laufen in Echtzeit weiter
+  for (const x of G.bolts) x.t -= dtReal; G.bolts = G.bolts.filter(x => x.t > 0);
+  for (const x of G.fx) x.t -= dtReal; G.fx = G.fx.filter(x => x.t > 0);
+  if (G.phase !== 'wave' && G.shots.length) G.shots = [];
   for (const p of G.parts){ p.x += p.vx*dtReal; p.y += p.vy*dtReal; p.vx *= 0.92; p.vy *= 0.92; p.t -= dtReal; }
   G.parts = G.parts.filter(p => p.t > 0); if (G.parts.length > 260) G.parts.splice(0, G.parts.length - 260);
   for (const f of G.floats){ f.y -= 34*dtReal; f.t -= dtReal; }
@@ -2095,8 +2101,6 @@ function gameStep(G, dt){
   G.shots = G.shots.filter(s => !s.done);
   if (G.born.length){ G.enemies.push(...G.born); G.born = []; }
   G.enemies = G.enemies.filter(e => !e.dead);
-  for (const x of G.bolts) x.t -= dt; G.bolts = G.bolts.filter(x => x.t > 0);
-  for (const x of G.fx) x.t -= dt; G.fx = G.fx.filter(x => x.t > 0);
   if (G.lives <= 0){ G.lives = 0; gameOver(); return; }
   // Frage während der Welle
   if (G.waveT >= G.nextQ && (G.queue.length || G.enemies.length)){ G.nextQ = G.waveT + GCFG.everyQ; gameAsk(G, 'wave'); return; }
@@ -2406,6 +2410,7 @@ function vPlay(){
 }
 function renderGameUI(){
   const G = S.play, el = document.getElementById('gui'); if (!G || !el) return;
+  document.documentElement.classList.toggle('gmopen', !!(G.menu || G.q || G.phase === 'over'));
   updateHud();
   const sp = document.getElementById('gspeed'); if (sp) sp.textContent = G.speed + '×';
   const wb = document.getElementById('gwave');
