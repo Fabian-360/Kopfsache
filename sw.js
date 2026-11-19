@@ -1,12 +1,13 @@
 // Kopfsache – Offline-Speicher
-const V = 'kopfsache-v38';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'touch-icon-2.png', 'app-icon-192-2.png', 'app-icon-512-2.png', 'content.json'];
+const V = 'kopfsache-v39';
+const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'touch-icon-2.png', 'app-icon-192-2.png', 'app-icon-512-2.png', 'content.json', 'py-worker.js'];
+const PYC = 'kopfsache-python';
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== V && k !== PYC).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('fetch', e => {
   const req = e.request;
@@ -19,6 +20,11 @@ self.addEventListener('fetch', e => {
       if (res.ok) { const copy = res.clone(); caches.open(V).then(c => c.put('content.json', copy)); }
       return res;
     }).catch(() => caches.match('content.json')));
+    return;
+  }
+  // Python (Pyodide): einmal laden, dann für immer aus dem Speicher (Version steckt in der Adresse)
+  if (url.host === 'cdn.jsdelivr.net' && url.pathname.startsWith('/pyodide/')){
+    e.respondWith(caches.open(PYC).then(c => c.match(req).then(hit => hit || fetch(req).then(res => { if (res.ok) c.put(req, res.clone()); return res; }))));
     return;
   }
   // Schriften: einmal laden, dann aus dem Speicher

@@ -416,6 +416,86 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 .toast .c{font-size:40px;animation:spin .8s ease}
 @keyframes pop{0%{opacity:0;transform:translate(-50%,20px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.05)}25%{transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px)}}
 @keyframes spin{from{transform:rotateY(0)}to{transform:rotateY(720deg)}}
+
+/* ---------- Coding-Welt ---------- */
+.bar2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 18px}.bar2 .duebar{margin:0}
+@media (max-width:760px){.bar2{grid-template-columns:1fr}}
+.cwbar{border-color:#2FBF71}
+.pystat{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:14px;font-weight:700;color:var(--muted);background:var(--card);border-radius:14px;padding:10px 14px;margin:0 0 22px}
+.pydot{width:10px;height:10px;border-radius:50%;background:var(--open);flex:none}.pydot.ok{background:#2FBF71}.pydot.bad{background:var(--bad)}.pydot.load{background:var(--gold);animation:pulse 1s infinite alternate}
+@keyframes pulse{to{opacity:.3}}
+.linkbtn{color:var(--acc);font-weight:800;text-decoration:underline}
+.cwch{background:var(--card);border-radius:var(--r);padding:20px 18px 26px;margin:0 0 18px;border:2px solid var(--line)}
+.cwch.lock{opacity:.5}
+.cwhead{display:flex;align-items:center;gap:14px;margin-bottom:16px}.cwhead h2{font-size:24px}.cwhead small{color:var(--muted);font-weight:700;font-size:13px}
+.cwem{width:52px;height:52px;border-radius:14px;background:var(--accsoft);display:grid;place-items:center;font-size:28px;flex:none}
+.cwpath{display:flex;flex-direction:column;align-items:center;gap:14px}
+.cwrow{display:flex;align-items:center;gap:14px;width:min(100%,520px);transform:translateX(var(--o));transition:transform .2s}
+@media (max-width:640px){.cwrow{transform:translateX(calc(var(--o) * .4))}}
+.cwn{width:68px;height:68px;border-radius:50%;flex:none;background:#000;border:3px solid var(--line);display:grid;place-items:center;font-size:28px;box-shadow:0 6px 0 #000}
+.cwn:active{transform:translateY(3px);box-shadow:0 3px 0 #000}
+.cwn.done{background:var(--acc);border-color:var(--acc)}
+.cwn.cur{border-color:#fff;background:var(--acc);animation:cwpulse 1.4s ease-in-out infinite}
+.cwn.test{border-radius:20px}
+.cwn[disabled]{opacity:.45}
+@keyframes cwpulse{50%{box-shadow:0 0 0 10px rgba(225,6,0,.25),0 6px 0 #000}}
+.cwlab{display:flex;flex-direction:column;min-width:0}.cwlab b{font-size:16px;line-height:1.2}.cwlab small{font-size:12px;color:var(--muted);font-weight:700}
+.cwrev{margin:0 0 18px}.cwrevb{width:100%;display:flex;align-items:center;gap:16px;text-align:left;background:#000;border:2px dashed var(--acc);border-radius:var(--r);padding:18px 20px}
+.cwrevb span{font-size:34px}.cwrevb b{font-size:19px}.cwrevb small{display:block;font-size:13px;color:var(--muted);font-weight:700}
+.cwrevb.cur{border-style:solid;animation:cwpulse 1.4s ease-in-out infinite}.cwrev.ok .cwrevb{border:2px solid #2FBF71}.cwrev.lock{opacity:.5}
+.cwfoot{font-size:13px;margin-top:20px}
+.cwlv .cwtype{display:inline-block;font-size:13px;font-weight:800;color:var(--gold);letter-spacing:.02em;margin-bottom:4px}
+.cwtitle{font-size:28px;margin:0 0 14px}
+.cwtext,.cwq{font-size:17px;line-height:1.6}.cwtext p,.cwq p{margin:0 0 12px}.cwtext ul,.cwtext ol,.cwq ul{margin:0 0 12px;padding-left:22px}.cwtext li,.cwq li{margin:3px 0}
+.cwtext code,.cwq code,.cwfb code,.cwhints code,.cwerr code,.cwopt code,.cwlab code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:#000;border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:#FFB3B0}
+.cwpre{font-family:ui-monospace,Menlo,monospace;font-size:15px;line-height:1.5;background:#000;border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:12px;padding:12px 14px;margin:0 0 14px;overflow-x:auto;white-space:pre;color:#EDEDED}
+.cwpre.big{font-size:16px}
+.hk{color:#FF6B6B;font-weight:700}.hf{color:#7CC4FF}.hs{color:#9BE89B}.hn{color:#FFC83D}.hc{color:#8A8A93;font-style:italic}
+.cwopts{display:flex;flex-direction:column;gap:10px;margin:4px 0 16px}
+.cwopt{text-align:left;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 16px;font-weight:700;font-size:16px;display:flex;flex-direction:column;gap:6px}
+.cwopt .ocode{white-space:pre-wrap;background:none;border:0;padding:0;color:var(--ink);font-size:15px}
+.cwopt small{font-weight:600;color:var(--ink);opacity:.85;font-size:14px}
+.cwopt.ok{border-color:#2FBF71;background:var(--okbg)}.cwopt.bad{border-color:var(--bad);background:var(--badbg)}.cwopt[disabled]{opacity:1}
+.cwlines{display:flex;flex-direction:column;background:#000;border:1px solid var(--line);border-radius:12px;padding:6px;margin:0 0 16px;overflow-x:auto}
+.cwln{display:flex;gap:12px;align-items:baseline;text-align:left;padding:8px 10px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:15px;white-space:pre;border:2px solid transparent}
+.cwln i{font-style:normal;color:#55545C;width:18px;flex:none;text-align:right}
+.cwln:not([disabled]):active{background:var(--card)}
+.cwln.ok{border-color:#2FBF71;background:var(--okbg)}.cwln.bad{border-color:var(--bad);background:var(--badbg)}.cwln[disabled]{opacity:1}
+.gapbox{white-space:pre;line-height:2.1}
+.cwgap{font:inherit;font-family:ui-monospace,Menlo,monospace;background:var(--card2);color:#fff;border:2px solid var(--gold);border-radius:8px;padding:1px 6px;margin:0 2px;min-width:3ch}
+.cwgap.bad{border-color:var(--bad);background:var(--badbg)}.cwgap.ok{border-color:#2FBF71;background:var(--okbg)}
+.cwordbox{display:flex;flex-direction:column;gap:6px;min-height:60px;background:#000;border:2px dashed var(--line);border-radius:12px;padding:8px;margin:0 0 12px}
+.cwordbox .muted{padding:10px;font-size:14px}
+.cwol,.cwoc{display:flex;gap:10px;align-items:baseline;text-align:left;font-family:ui-monospace,Menlo,monospace;font-size:15px;white-space:pre;border-radius:10px;padding:9px 12px;background:var(--card);border:2px solid var(--line)}
+.cwol i{font-style:normal;color:#55545C}.cwol.ok{border-color:#2FBF71}
+.cwochips{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}.cwoc{border-color:var(--acc)}
+.small{font-size:13px}
+.cwcalc{display:flex;align-items:center;gap:10px;max-width:280px;margin:0 0 16px}.cwcalc .exin{margin:0}.cwcalc span{font-weight:800;font-size:20px}
+.exin.bad{border-color:var(--bad)}
+.cwgiven{margin:0 0 10px}.cwgiven small{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px}.cwgiven .cwpre{opacity:.75;border-left-color:var(--muted)}
+.cwgiven.sol .cwpre{opacity:1;border-left-color:#2FBF71}
+.cwed{background:#000;border:2px solid var(--acc);border-radius:14px;overflow:hidden;margin:0 0 14px}
+.cwed textarea{display:block;width:100%;background:#000;color:#fff;border:0;outline:0;resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:16px;line-height:1.5;padding:14px;tab-size:4;white-space:pre;overflow-x:auto}
+.cwkeys{display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--card);border-top:1px solid var(--line)}
+.cwkey{min-width:44px;height:40px;padding:0 10px;border-radius:10px;background:var(--card2);border:1px solid var(--line);font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:16px}
+.cwkey:active{background:var(--acc)}.cwkey.wide{margin-left:auto;font-family:inherit;font-size:14px}
+.cwout{margin:0 0 12px}.cwout small{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px}
+.cwout pre{margin:0;font-family:ui-monospace,Menlo,monospace;font-size:15px;background:var(--card);border-radius:12px;padding:12px 14px;white-space:pre-wrap;word-break:break-word;max-height:340px;overflow:auto}
+.cwerr{background:var(--badbg);border:2px solid var(--bad);border-radius:14px;padding:12px 16px;margin:0 0 12px}.cwerr b{display:block;font-size:17px}.cwerr p{margin:4px 0 8px;font-size:15px}.cwerr small{color:var(--muted);font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.cwerr .cwpre{margin:0 0 6px;font-size:14px}
+.cwcanvas{margin:0 0 14px}.cwcanvas canvas{display:block;border-radius:12px;border:2px solid var(--acc);background:#fff}.cwcanvas small{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-top:6px}
+.cwhints{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}.cwhints div{background:rgba(255,200,61,.08);border:1px solid var(--gold);border-radius:12px;padding:10px 14px;font-size:15px}.cwhints b{color:var(--gold)}
+.cwfb{border-radius:16px;padding:14px 18px;margin:0 0 16px;border:2px solid}.cwfb.ok{border-color:#2FBF71;background:var(--okbg)}.cwfb.bad{border-color:var(--bad);background:var(--badbg)}
+.cwfb>b{display:flex;justify-content:space-between;gap:10px;font-size:18px;margin-bottom:6px}.cwfb p{margin:0 0 8px;font-size:16px}.cwfb .cwpre{margin-top:6px}
+.cwstars{white-space:nowrap}
+.cwbtns{margin-top:4px}.btn.small{min-height:40px;padding:8px 16px;font-size:15px}
+.cwresbox{text-align:center;background:var(--card);border-radius:var(--r);padding:34px 24px;border:3px solid var(--line)}.cwresbox.ok{border-color:#2FBF71}
+.cwresbox h1{font-size:64px}.cwresbox p{color:var(--muted);font-weight:700}.cwresbox p b{color:var(--ink)}.cwbig{font-size:64px}
+
+.cwhead{width:100%;text-align:left;color:var(--ink)}.cwchev{margin-left:auto;font-size:22px;color:var(--muted)}
+.cwch.small{padding:14px 18px}.cwch.small .cwhead{margin:0}.cwch.ok{border-color:rgba(47,191,113,.5)}
+.cwcanvas canvas{margin:0 auto}.cwcanvas{max-width:560px}
+.cwlv .top .back{white-space:nowrap}.cwlv .top .pill{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;display:block}
 </style>
 </head>
 <body>
@@ -425,7 +505,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '38';
+const APP_VERSION = '39';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -493,7 +573,8 @@ function applyEdits(mods){
     return Object.assign({}, m, { questions: qs });
   });
 }
-function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, puzzles: p.puzzles && typeof p.puzzles==='object' ? p.puzzles : {}, pzLevel: p.pzLevel || 6, exams: p.exams && typeof p.exams==='object' ? p.exams : {}, lastBackup:+p.lastBackup||0, backupSnooze:+p.backupSnooze||0, edits: p.edits && typeof p.edits==='object' ? p.edits : {}, coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0, game: normGame(p.game) }; }
+function normP(p){ p = p && typeof p==='object' ? p : {}; return { q:p.q||{}, lessons:p.lessons||{}, tests:Array.isArray(p.tests)?p.tests:[], days:p.days||{}, puzzles: p.puzzles && typeof p.puzzles==='object' ? p.puzzles : {}, pzLevel: p.pzLevel || 6, exams: p.exams && typeof p.exams==='object' ? p.exams : {}, lastBackup:+p.lastBackup||0, backupSnooze:+p.backupSnooze||0, edits: p.edits && typeof p.edits==='object' ? p.edits : {}, cw: normCw(p.cw), coins:+p.coins||0, run:+p.run||0, ct:+p.ct||0, game: normGame(p.game) }; }
+function normCw(c){ c = c && typeof c==='object' ? c : {}; const o = x => x && typeof x==='object' ? x : {}; return { s:o(c.s), t:o(c.t), code:o(c.code) }; }
 function normGame(g){ g = g && typeof g==='object' ? g : {}; const st = g.stats||{}; return { best:g.best||{}, bonus:g.bonus||{}, saves: g.saves && typeof g.saves==='object' ? g.saves : {}, map: g.map||'wald', sound: g.sound !== false, stats:{ games:+st.games||0, waves:+st.waves||0, right:+st.right||0, wrong:+st.wrong||0, kills:+st.kills||0, bestStreak:+st.bestStreak||0 } }; }
 
 const mod = () => S.modules.find(m => m.id===S.modId);
@@ -891,7 +972,7 @@ function mergeP(a, b){
   const out = normP(clone(a)); b = normP(b);
   for (const k in b.q){ if (!out.q[k] || (b.q[k].t||0) > (out.q[k].t||0)) out.q[k] = b.q[k]; }
   Object.assign(out.lessons, b.lessons);
-  Object.assign(out.exams, b.exams); Object.assign(out.puzzles, b.puzzles); out.lastBackup = Math.max(out.lastBackup||0, b.lastBackup||0);
+  Object.assign(out.exams, b.exams); for (const k in b.cw.s) out.cw.s[k] = Math.max(out.cw.s[k] ?? -1, b.cw.s[k]); for (const k in b.cw.t) out.cw.t[k] = Math.max(out.cw.t[k] || 0, b.cw.t[k]); for (const k in b.cw.code) if (out.cw.code[k] == null) out.cw.code[k] = b.cw.code[k]; Object.assign(out.puzzles, b.puzzles); out.lastBackup = Math.max(out.lastBackup||0, b.lastBackup||0);
   for (const k in b.edits){ if (!out.edits[k] || (b.edits[k].t||0) > (out.edits[k].t||0)) out.edits[k] = b.edits[k]; }
   const seen = new Set(out.tests.map(t => t.t));
   b.tests.forEach(t => { if (!seen.has(t.t)) out.tests.push(t); });
@@ -1095,8 +1176,12 @@ function vModule(){
     ${(() => { if (noQ) return ''; const nd = dueQs(m).length, nx = nextDueDay(m);
       if (nd) return `<button class="duebar" data-act="test" data-mode="due"><span class="di">🔁</span><span class="dt">Heute fällig: ${nd} ${nd === 1 ? 'Frage' : 'Fragen'}<small>Wiederhole sie jetzt, bevor du sie vergisst – Falsche kommen morgen wieder</small></span><span class="dgo">Jetzt wiederholen</span></button>`;
       return `<div class="duebar ok"><span class="di">✅</span><span class="dt">Nichts fällig<small>${nx ? 'Nächste Wiederholung ' + relDay(nx) : 'Beantworte Fragen, dann plant die App die Wiederholungen'}</small></span></div>`; })()}
-    ${(() => { const figs = pzFigs(m); if (!figs.length) return ''; const done = figs.filter(f => (P.puzzles[m.id+'::'+f]||{}).solved).length;
-      return `<button class="duebar pzbar" data-act="puzzles"><span class="di">🧩</span><span class="dt">Schaubilder puzzeln<small>Setz die Beschriftungen an die richtige Stelle · ${done} von ${figs.length} gelöst</small></span><span class="dgo">Los</span></button>`; })()}
+    ${(() => { const figs = pzFigs(m), done = figs.filter(f => (P.puzzles[m.id+'::'+f]||{}).solved).length;
+      const pz = figs.length ? `<button class="duebar pzbar" data-act="puzzles"><span class="di">🧩</span><span class="dt">Schaubilder puzzeln<small>Setz die Beschriftungen an die richtige Stelle · ${done} von ${figs.length} gelöst</small></span><span class="dgo">Los</span></button>` : '';
+      if (!m.coding) return pz;
+      let n = 0, d = 0; m.coding.chapters.forEach(c => c.levels.forEach(l => { n++; if (P.cw.s[l.id] !== undefined) d++; }));
+      const cw = `<button class="duebar cwbar" data-act="cw"><span class="di">💻</span><span class="dt">Coding-Welt<small>Python aus dem Seminar · ${d} von ${n} Level</small></span><span class="dgo">Los</span></button>`;
+      return `<div class="bar2">${pz}${cw}</div>`; })()}
     <div class="tiles${ex.length ? ' four' : ''}">
       <button class="tile" data-act="learn"><span class="ic">📖</span><h3>Lernen</h3><span>${read} von ${ls.length} Texten gelesen</span></button>
       ${st.open && !noQ ? `<button class="tile locked" data-act="testLocked"><span class="ic">🔒</span><h3>Test</h3><span>Noch ${st.open} ${st.open === 1 ? 'Frage' : 'Fragen'} unbeantwortet – erst im Übungsheft üben</span></button>`
@@ -1510,11 +1595,12 @@ function render(){
       return;
     }
   }
-  const v = { play:vPlay, settings:vSettings, stack:vStack, game:vGame, welcome:vWelcome, home:vHome, module:vModule, learn:vLearn, lesson:vLesson, test:vTest, result:vResult, wb:vWorkbook, puzzles:vPuzzles, puzzle:vPuzzle }[S.view] || vHome;
+  const v = { play:vPlay, settings:vSettings, stack:vStack, game:vGame, welcome:vWelcome, home:vHome, module:vModule, learn:vLearn, lesson:vLesson, test:vTest, result:vResult, wb:vWorkbook, puzzles:vPuzzles, puzzle:vPuzzle, cw:vCw, cwl:vCwl, cwres:vCwRes }[S.view] || vHome;
   app.innerHTML = v();
   if (S.toast){ const html = S.toast; S.toast = false; const t = document.createElement('div'); t.className='toast'; t.innerHTML=html; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
   fitHomeHead();
   if (S.view === 'puzzle') pzDom();
+  if (S.view === 'cwl' && document.getElementById('cwcv')) requestAnimationFrame(cwDraw);
   const arc = app.querySelector('.ringarc');
   if (arc) requestAnimationFrame(() => requestAnimationFrame(() => { arc.style.strokeDashoffset = arc.dataset.off; }));
 }
@@ -2421,6 +2507,426 @@ Object.assign(A, {
   gAns: d => { const G = S.play; if (G && G.q) pickAnswer(G.q, +d.j, G.m); },
   gCheck: () => { const G = S.play; if (G && G.q) finishAnswer(G.q, G.q.sel.slice(), G.m); },
   gNext: () => gameCloseQuestion(),
+});
+
+/* ================= CODING-WELT (AI Literacy) – Level, Kapiteltests, echtes Python über Pyodide ================= */
+const CW_TYPES = { read:'📖 Erklärung', mc:'🤔 Was stimmt?', line:'🐞 Wo ist der Fehler?', gap:'✍️ Lücke füllen', order:'🧱 Reihenfolge', calc:'🔢 Rechnen', code:'💻 Selbst schreiben', turtle:'🐢 Zeichnen' };
+const CW_QUICK = new Set(['mc','line','gap','order','calc']);
+const cwMod = () => S.modules.find(m => m.coding && (m.id === S.modId || !S.modId)) || S.modules.find(m => m.coding);
+const cwChs = () => { const m = cwMod(); return m ? m.coding.chapters : []; };
+const cwCh = id => cwChs().find(c => c.id === id);
+const cwLv = (ch, id) => ch.levels.find(l => l.id === id);
+const cwDone = id => P.cw.s[id] !== undefined;
+const cwPassed = ch => (P.cw.t[ch.id] || 0) >= 80;
+function cwOpenCh(i){ const chs = cwChs(); return i === 0 || cwPassed(chs[i-1]); }
+const cwAllDone = ch => ch.levels.every(l => cwDone(l.id));
+function cwStats(){ let n = 0, d = 0, st = 0; cwChs().forEach(c => c.levels.forEach(l => { n++; if (cwDone(l.id)){ d++; st += P.cw.s[l.id]; } })); return { n, d, st, max: n*3 }; }
+
+/* ---------- kleines Markdown + Python-Färbung ---------- */
+const PY_KW = new Set('def return if elif else for in while import from as and or not True False None'.split(' '));
+const PY_FN = new Set('print len range input int float str type sum chr list'.split(' '));
+function hl(src){
+  let out = '', i = 0; const s = String(src);
+  const re = /(#[^\n]*)|([fF]?"(?:[^"\\\n]|\\.)*"?|[fF]?'(?:[^'\\\n]|\\.)*'?)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_]\w*)|([\s\S])/g; let mm;
+  while ((mm = re.exec(s))){
+    if (mm[1]) out += `<span class="hc">${esc(mm[1])}</span>`;
+    else if (mm[2]) out += `<span class="hs">${esc(mm[2])}</span>`;
+    else if (mm[3]) out += `<span class="hn">${esc(mm[3])}</span>`;
+    else if (mm[4]) out += PY_KW.has(mm[4]) ? `<span class="hk">${mm[4]}</span>` : PY_FN.has(mm[4]) ? `<span class="hf">${mm[4]}</span>` : mm[4];
+    else out += esc(mm[5]);
+  }
+  return out;
+}
+function mdInline(t){
+  return esc(t).replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\*([^*\s][^*]*)\*/g, '<i>$1</i>');
+}
+function md(src){
+  const lines = String(src || '').trim().split('\n'); let out = '', list = null, para = [];
+  const flushP = () => { if (para.length){ out += `<p>${mdInline(para.join(' '))}</p>`; para = []; } };
+  const flushL = () => { if (list){ out += `</${list}>`; list = null; } };
+  for (let i = 0; i < lines.length; i++){
+    const ln = lines[i];
+    if (/^```/.test(ln.trim())){ flushP(); flushL(); const buf = []; i++; while (i < lines.length && !/^```/.test(lines[i].trim())) buf.push(lines[i++]); out += `<pre class="cwpre">${hl(buf.join('\n'))}</pre>`; continue; }
+    const li = ln.match(/^\s*(?:- |(\d+)\. )(.*)$/);
+    if (li){ flushP(); const tag = li[1] ? 'ol' : 'ul'; if (list !== tag){ flushL(); out += `<${tag}>`; list = tag; } out += `<li>${mdInline(li[2])}</li>`; continue; }
+    if (!ln.trim()){ flushP(); flushL(); continue; }
+    flushL(); para.push(ln.trim());
+  }
+  flushP(); flushL(); return out;
+}
+
+/* ---------- Python (Pyodide im Hintergrund-Worker) ---------- */
+const PY = { w:null, seq:0, wait:{}, state:'idle', msg:'', timer:0, pk:new Set() };
+function pyWorker(){
+  if (PY.w) return PY.w;
+  PY.w = new Worker('py-worker.js');
+  PY.w.onmessage = e => {
+    const d = e.data, cb = PY.wait[d.id]; if (!cb) return;
+    if (d.phase === 'boot'){ PY.state = 'loading'; PY.msg = 'Python wird geladen … (beim ersten Mal ca. 10–30 Sekunden)'; pyStatus(); }
+    else if (d.phase === 'pkg'){ PY.state = 'loading'; PY.msg = 'Lade ' + d.pkgs.join(', ') + ' …'; pyStatus(); }
+    else if (d.phase === 'run'){ PY.state = 'ready'; PY.msg = 'läuft …'; pyStatus(); clearTimeout(PY.timer); PY.timer = setTimeout(() => pyKill(d.id), 10000); }
+    else if (d.phase === 'done'){ clearTimeout(PY.timer); PY.state = 'ready'; PY.msg = ''; (cb.pk||[]).forEach(p => PY.pk.add(p)); delete PY.wait[d.id]; cb.ok(d.res); pyStatus(); }
+    else if (d.phase === 'fail'){ clearTimeout(PY.timer); PY.state = 'fail'; PY.msg = d.msg; delete PY.wait[d.id]; cb.ok({ fail: d.msg }); pyStatus(); }
+  };
+  PY.w.onerror = ev => { PY.state = 'fail'; PY.msg = 'Python konnte nicht starten'; Object.values(PY.wait).forEach(cb => cb.ok({ fail: PY.msg })); PY.wait = {}; PY.w = null; pyStatus(); ev.preventDefault && ev.preventDefault(); };
+  return PY.w;
+}
+function pyKill(id){
+  const cb = PY.wait[id]; try { PY.w.terminate(); } catch(e){} PY.w = null; PY.pk = new Set(); PY.state = 'idle'; delete PY.wait[id];
+  if (cb) cb.ok({ out:'', err:{ type:'Timeout', msg:'', line:null }, check:null });
+}
+function pyCall(req, pkgs, warm){
+  return new Promise(ok => { const id = ++PY.seq; PY.wait[id] = { ok, pk:pkgs }; pyWorker().postMessage({ id, req, pkgs: pkgs||[], warm: !!warm, base: cwMod().coding.pyodide }); });
+}
+function pyStatus(){ const el = document.getElementById('pystat'); if (el) el.innerHTML = pyStatHtml(); }
+function pyStatHtml(){
+  if (PY.state === 'loading') return `<span class="pydot load"></span>${esc(PY.msg)}`;
+  if (PY.state === 'fail') return `<span class="pydot bad"></span>Python konnte nicht geladen werden – beim ersten Mal braucht es Internet. <button class="linkbtn" data-act="cwPyRetry">Nochmal versuchen</button>`;
+  if (PY.state === 'ready') return `<span class="pydot ok"></span>Python bereit${PY.msg ? ' · ' + esc(PY.msg) : ''}`;
+  return `<span class="pydot"></span>Python startet beim ersten Code-Level (einmal Internet nötig, danach offline)`;
+}
+
+/* ---------- Fehlermeldungen auf Deutsch ---------- */
+function cwErr(e, code){
+  if (!e) return null;
+  const m = e.msg || '', t = e.type, L = e.line ? `Zeile ${e.line}: ` : '';
+  const srcLine = e.line ? String(code).split('\n')[e.line-1] : '';
+  let title = t, text = '';
+  if (t === 'Timeout'){ title = '⏳ Dein Code läuft zu lange'; text = 'Nach 10 Sekunden abgebrochen – vermutlich eine Endlosschleife (z. B. while-Bedingung wird nie False).'; }
+  else if (t === 'NameError'){ const n = (m.match(/'([^']+)'/)||[])[1] || '?'; title = `Python kennt <code>${esc(n)}</code> noch nicht`;
+    const ids = [...new Set(String(code).match(/[A-Za-z_]\w*/g) || [])], twin = ids.find(x => x !== n && x.toLowerCase() === n.toLowerCase());
+    text = twin ? `Meintest du <code>${esc(twin)}</code>? Python unterscheidet Groß- und Kleinschreibung.` : 'Tippfehler? Fehlende Anführungszeichen bei einem Text? Oder wird die Variable erst später angelegt (z. B. fehlt <code>total = 0</code> vor der Schleife)?'; }
+  else if (t === 'SyntaxError' && /unterminated string/.test(m)){ title = 'Ein Text ist nicht geschlossen'; text = 'Es fehlt ein Anführungszeichen – jeder Text braucht eins am Anfang und eins am Ende.'; }
+  else if (t === 'SyntaxError' && /never closed/.test(m)){ title = 'Eine Klammer ist nicht geschlossen'; text = 'Zu jeder ( [ { gehört eine ) ] } .'; }
+  else if (t === 'SyntaxError' && /invalid decimal literal/.test(m)){ title = 'Zahl und Zeichen vermischt'; text = 'Eine Zahl darf keine Einheit oder Buchstaben enthalten (z. B. <code>9€</code> → <code>9</code>). Kommazahlen mit Punkt.'; }
+  else if (t === 'SyntaxError' && /expected ':'/.test(m)){ title = 'Doppelpunkt fehlt'; text = 'Nach <code>if</code>, <code>elif</code>, <code>else</code>, <code>for</code>, <code>while</code> und <code>def</code> kommt ein <code>:</code>.'; }
+  else if (t === 'SyntaxError' && /Maybe you meant '=='|cannot assign/.test(m)){ title = '= statt =='; text = 'Zum Vergleichen braucht man <code>==</code>. Ein einzelnes <code>=</code> weist einen Wert zu.'; }
+  else if (t === 'SyntaxError'){ title = 'Python versteht diese Zeile nicht'; text = 'Prüfe Schreibweise, Klammern, Anführungszeichen und Doppelpunkte. Befehle heißen genau so wie im Seminar (z. B. <code>right(90)</code>, nicht <code>turn right(90)</code>).'; }
+  else if (t === 'IndentationError' && /expected an indented/.test(m)){ title = 'Einrückung fehlt'; text = 'Nach einer Zeile mit <code>:</code> muss der zugehörige Code eingerückt sein (4 Leerzeichen – Taste ⇥).'; }
+  else if (t === 'IndentationError'){ title = 'Einrückung passt nicht'; text = 'Diese Zeile ist eingerückt, obwohl sie es nicht sein darf – oder unterschiedlich weit.'; }
+  else if (t === 'TypeError' && /concatenate str|unsupported operand.*'str'|'str' and 'int'|'int' and 'str'/.test(m)){ title = 'Text und Zahl gemischt'; text = 'Text (str) und Zahl kann man nicht mit + verbinden. Erst umwandeln: <code>int(...)</code> oder <code>float(...)</code>.'; }
+  else if (t === 'TypeError' && /NoneType/.test(m)){ title = 'Mit None gerechnet'; text = 'Ein Wert ist <code>None</code> – meistens fehlt in einer Funktion das <code>return</code> (print zeigt nur an).'; }
+  else if (t === 'TypeError' && /can't multiply sequence/.test(m)){ title = 'Text mal Text?'; text = 'Zwei Texte kann man nicht multiplizieren.'; }
+  else if (t === 'TypeError'){ title = 'Falscher Datentyp'; text = 'Hier passt der Datentyp nicht zur Operation.'; }
+  else if (t === 'ValueError' && /invalid literal for int|could not convert/.test(m)){ title = 'Umwandeln geht nicht'; text = 'Der Text besteht nicht nur aus Ziffern und lässt sich deshalb nicht in eine Zahl umwandeln.'; }
+  else if (t === 'IndexError'){ title = 'Diesen Index gibt es nicht'; text = 'Gezählt wird ab 0 – bei 7 Einträgen ist der letzte Index 6.'; }
+  else if (t === 'KeyError'){ title = 'Diese Spalte gibt es nicht'; text = `Gesucht wurde ${esc(m)} – Schreibweise prüfen (Groß/klein, Anführungszeichen).`; }
+  else if (t === 'ZeroDivisionError'){ title = 'Durch 0 geteilt'; text = 'Teilen durch 0 geht nicht.'; }
+  else if (t === 'AttributeError'){ title = 'Das gibt es hier nicht'; text = esc(m); }
+  else if (t === 'RuntimeError'){ title = 'Fehler'; text = esc(m); }
+  else text = esc(m);
+  return `<div class="cwerr"><b>${L}${title}</b><p>${text}</p>${srcLine ? `<pre class="cwpre">${hl(srcLine)}</pre>` : ''}<small>${esc(t)}${m && t !== 'Timeout' ? ': ' + esc(m) : ''}</small></div>`;
+}
+
+/* ---------- Level starten ---------- */
+function cwPerm(n){ const a = [...Array(n).keys()]; return shuffle(a); }
+function cwState(ch, lv, test){
+  const st = { ch: ch.id, lid: lv.id, wrong:0, hints:0, sol:false, done:false, tried:[], perm: lv.opts ? cwPerm(lv.opts.length) : null, gapv: [], gapBad: [], ord: [], ordAll: null, ordOk: 0, calcv:'', calcBad:false, res:null, busy:false, test };
+  if (lv.t === 'order') st.ordAll = shuffle(lv.lines.concat(lv.extra || []).map((t, k) => ({ t, k })));
+  if (lv.t === 'code' || lv.t === 'turtle') st.code = P.cw.code[lv.id] != null ? P.cw.code[lv.id] : lv.starter;
+  return st;
+}
+function cwOpen(chId, lid){
+  const ch = cwCh(chId), lv = ch && cwLv(ch, lid); if (!lv) return;
+  S.cwl = cwState(ch, lv, null); S.view = 'cwl'; render(); window.scrollTo(0,0);
+  if (lv.t === 'code' || lv.t === 'turtle') pyCall(null, cwPk(ch, lv), true);
+}
+const cwPk = (ch, lv) => [...new Set([...(ch.pkgs||[]), ...(lv.pkgs||[])])];
+function cwStartTest(chId){
+  const ch = cwCh(chId); if (!ch) return; let items;
+  if (ch.kind === 'rev'){
+    const pool = []; cwChs().filter(c => ch.covers.includes(c.id)).forEach(c => c.levels.filter(l => CW_QUICK.has(l.t)).forEach(l => pool.push({ c:c.id, l:l.id, w: 4 - (P.cw.s[l.id] ?? 0) + Math.random()*2 })));
+    items = pool.sort((a,b) => b.w - a.w).slice(0, 10); items = shuffle(items);
+  } else items = shuffle(ch.levels.filter(l => CW_QUICK.has(l.t)).map(l => ({ c:ch.id, l:l.id })));
+  if (!items.length){ P.cw.t[ch.id] = 100; save(); go('cw'); return; }
+  S.cwt = { ch: ch.id, items, idx:0, right:0 };
+  const it = items[0], c0 = cwCh(it.c); S.cwl = cwState(c0, cwLv(c0, it.l), S.cwt); S.view = 'cwl'; render(); window.scrollTo(0,0);
+}
+const cwStars = st => st.sol ? 0 : Math.max(1, 3 - st.hints - Math.min(2, st.wrong));
+function cwFinish(ok){
+  const st = S.cwl; if (st.done) return; st.done = true;
+  if (st.test){ if (ok) st.test.right++; st.testOk = ok; }
+  else { const s = cwStars(st), prev = P.cw.s[st.lid]; P.cw.s[st.lid] = prev === undefined ? s : Math.max(prev, s); save(); st.got = s; }
+}
+function cwWrong(){ const st = S.cwl; if (st.test){ cwFinish(false); return; } st.wrong++; }
+
+/* ---------- Karte ---------- */
+function vCw(){
+  const m = cwMod(); if (!m) return vHome();
+  const chs = cwChs(), s = cwStats(); let nextSet = false; cwCurSet = false;
+  const OFF = [0, 70, 110, 70, 0, -70, -110, -70];
+  const sec = chs.map((ch, ci) => {
+    const open = cwOpenCh(ci), passed = cwPassed(ch), best = P.cw.t[ch.id];
+    if (ch.kind === 'rev'){
+      const cur = open && !passed && !nextSet; if (cur) nextSet = true;
+      return `<div class="cwrev ${open ? '' : 'lock'} ${passed ? 'ok' : ''}"><button class="cwrevb ${cur ? 'cur' : ''}" data-act="cwTest" data-c="${ch.id}" ${open ? '' : 'disabled'}><span>${open ? '🔁' : '🔒'}</span><b>${esc(ch.title)}<small>${passed ? '✅ bestanden · ' + best + ' %' : open ? '10 gemischte Aufgaben · ab 80 % geht es weiter' : 'Erst das Kapitel davor abschließen'}</small></b></button></div>`;
+    }
+    const nodes = ch.levels.map((l, li) => {
+      const done = cwDone(l.id), un = open && (li === 0 || cwDone(ch.levels[li-1].id)), cur = un && !done && !nextSet; if (cur) nextSet = true;
+      const sv = P.cw.s[l.id], ic = !un ? '🔒' : l.t === 'read' ? '📖' : l.t === 'code' ? '💻' : l.t === 'turtle' ? '🐢' : l.t === 'line' ? '🐞' : l.t === 'order' ? '🧱' : l.t === 'calc' ? '🔢' : l.t === 'gap' ? '✍️' : '🤔';
+      return `<div class="cwrow" style="--o:${OFF[li % OFF.length]}px"><button class="cwn ${done ? 'done' : ''} ${cur ? 'cur' : ''}" data-act="cwOpen" data-c="${ch.id}" data-l="${l.id}" ${un ? '' : 'disabled'}><span>${ic}</span></button><span class="cwlab"><b>${esc(l.title)}</b><small>${done ? (sv ? '⭐'.repeat(sv) : '👀 Lösung angesehen – nochmal üben') : esc(CW_TYPES[l.t])}</small></span></div>`;
+    }).join('');
+    const tOpen = open && cwAllDone(ch), tCur = tOpen && !passed && !nextSet; if (tCur) nextSet = true;
+    const nQuick = ch.levels.filter(l => CW_QUICK.has(l.t)).length;
+    const nd = ch.levels.filter(l => cwDone(l.id)).length, isCur = open && !passed && !cwCurSet, show = S.cwShow ? S.cwShow === ch.id : isCur; if (isCur) cwCurSet = true;
+    const head = `<button class="cwhead" data-act="cwToggle" data-c="${ch.id}" ${open ? '' : 'disabled'}><span class="cwem">${open ? esc(ch.emoji) : '🔒'}</span><div><h2>${esc(ch.title)}</h2><small>${esc(ch.week || '')}${ch.week ? ' · ' : ''}${passed ? '✅ bestanden · ' : ''}${nd} von ${ch.levels.length} Level${nd ? ' · ' + '⭐ ' + ch.levels.reduce((a, l) => a + (P.cw.s[l.id] || 0), 0) : ''}</small></div><span class="cwchev">${open ? (show ? '▾' : '▸') : ''}</span></button>`;
+    if (!show) return `<section class="cwch small ${open ? '' : 'lock'} ${passed ? 'ok' : ''}">${head}</section>`;
+    return `<section class="cwch ${open ? '' : 'lock'}">${head}
+      <div class="cwpath">${nodes}<div class="cwrow" style="--o:0px"><button class="cwn test ${passed ? 'done' : ''} ${tCur ? 'cur' : ''}" data-act="cwTest" data-c="${ch.id}" ${tOpen ? '' : 'disabled'}><span>${tOpen ? '🏁' : '🔒'}</span></button><span class="cwlab"><b>Kapiteltest</b><small>${passed ? '✅ bestanden · ' + best + ' %' : best != null ? 'zuletzt ' + best + ' % · ab 80 % bestanden' : nQuick + ' Aufgaben ohne Hilfe · ab 80 % geht es weiter'}</small></span></div></div></section>`;
+  }).join('');
+  return `<div class="wrap fade">
+    <div class="top">${backBtn('openMod', m.title, ` data-id="${esc(m.id)}"`)}<span class="spacer"></span><span class="pill">⭐ ${s.st} / ${s.max}</span></div>
+    <h1 class="h-title">💻 Coding-Welt</h1>
+    <p class="h-sub">Python aus dem Seminar – Level für Level. Erst lesen und verstehen, dann Fehler finden, dann selbst schreiben. ${s.d} von ${s.n} Level geschafft.</p>
+    <div class="pystat" id="pystat">${pyStatHtml()}</div>
+    ${sec}
+    <p class="muted cwfoot">Neue Kapitel kommen nach jedem Seminar dazu. Sterne: ⭐⭐⭐ ohne Fehler und ohne Tipp · jeder Tipp oder Fehler kostet einen · Lösung angesehen = keine Sterne.</p>
+  </div>`;
+}
+
+let cwCurSet = false;
+/* ---------- Level-Ansicht ---------- */
+function vCwl(){
+  const st = S.cwl, ch = cwCh(st.ch), lv = ch && cwLv(ch, st.lid); if (!lv) return vCw();
+  const T = st.test, idx = ch.levels.indexOf(lv);
+  const head = T ? `<span class="pill">${cwCh(T.ch).kind === 'rev' ? '🔁 Wiederholung' : '🏁 Kapiteltest'} · ${T.idx + 1} / ${T.items.length}</span>` : `<span class="pill">${esc(ch.emoji)} ${esc(ch.title)} · ${idx + 1} / ${ch.levels.length}</span>`;
+  let body = '';
+  if (lv.t === 'read') body = `<div class="cwtext">${md(lv.text)}</div>`;
+  else body = `<div class="cwq">${md(lv.q)}</div>` + cwBody(lv, st);
+  const hints = lv.hints || [];
+  const fb = cwFeedback(lv, st);
+  let btns = '';
+  if (lv.t === 'read') btns = `<button class="btn acc" data-act="cwReadOk">Verstanden – weiter</button>`;
+  else if (st.done) btns = T ? `<button class="btn acc" data-act="cwTNext">${T.idx + 1 < T.items.length ? 'Nächste Aufgabe' : 'Auswertung'}</button>` : `<button class="btn acc" data-act="cwNext">Weiter</button><button class="btn ghost" data-act="cwRedo">Nochmal</button>`;
+  else {
+    if (lv.t === 'gap') btns += `<button class="btn acc" data-act="cwGap">Prüfen</button>`;
+    if (lv.t === 'order') btns += `<button class="btn acc" data-act="cwOrd" ${st.ord.length === lv.lines.length ? '' : 'disabled'}>Prüfen</button><button class="btn ghost" data-act="cwOrdReset" ${st.ord.length > st.ordOk ? '' : 'disabled'}>Zurücksetzen</button>`;
+    if (lv.t === 'calc') btns += `<button class="btn acc" data-act="cwCalc">Prüfen</button>`;
+    if (lv.t === 'code' || lv.t === 'turtle') btns += `<button class="btn ghost" data-act="cwRun" ${st.busy ? 'disabled' : ''}>▶ Ausführen</button><button class="btn acc" data-act="cwCheck" ${st.busy ? 'disabled' : ''}>${st.busy ? '⏳ läuft …' : '✓ Prüfen'}</button>`;
+    if (!T){
+      if (st.hints < hints.length) btns += `<button class="btn ghost" data-act="cwHint">💡 Tipp ${st.hints + 1} von ${hints.length}</button>`;
+      else btns += `<button class="btn ghost" data-act="cwSol">👀 Lösung zeigen</button>`;
+      if ((lv.t === 'code' || lv.t === 'turtle') && PY.state === 'fail') btns += `<button class="btn ghost" data-act="cwSkip">Ohne Python überspringen</button>`;
+    }
+  }
+  const hintHtml = !T && st.hints ? `<div class="cwhints">${hints.slice(0, st.hints).map((h, k) => `<div><b>💡 Tipp ${k+1}</b> ${mdInline(h)}</div>`).join('')}</div>` : '';
+  return `<div class="wrap fade cwlv">
+    <div class="top">${T ? `<button class="back" data-act="cwQuitTest">‹ Abbrechen</button>` : backBtn('cw', 'Coding-Welt')}<span class="spacer"></span>${head}</div>
+    <div class="cwtype">${CW_TYPES[lv.t]}</div>
+    <h2 class="cwtitle">${esc(lv.title)}</h2>
+    ${body}${hintHtml}${fb}
+    <div class="btnrow cwbtns">${btns}</div>
+    ${(lv.t === 'code' || lv.t === 'turtle') && !T ? `<div class="pystat" id="pystat">${pyStatHtml()}</div>` : ''}
+  </div>`;
+}
+function cwBody(lv, st){
+  const fin = st.done || st.sol;
+  if (lv.t === 'mc'){
+    const code = lv.code ? `<pre class="cwpre big">${hl(lv.code)}</pre>` : '';
+    return code + `<div class="cwopts">${st.perm.map(j => { const o = lv.opts[j], right = j === lv.a, tried = st.tried.includes(j);
+      const cls = (fin && right) ? 'ok' : tried ? 'bad' : '';
+      return `<button class="cwopt ${cls}" data-act="cwPick" data-j="${j}" ${fin || tried ? 'disabled' : ''}>${/\n/.test(o[0]) || /[()=\[\]"']/.test(o[0]) ? `<code class="ocode">${esc(o[0])}</code>` : mdInline(o[0])}${tried && o[1] ? `<small>${mdInline(o[1])}</small>` : ''}</button>`; }).join('')}</div>`;
+  }
+  if (lv.t === 'line'){
+    return `<div class="cwlines">${lv.code.split('\n').map((t, k) => { const tried = st.tried.includes(k), cls = (fin && k === lv.bad) ? 'ok' : tried ? 'bad' : '';
+      return `<button class="cwln ${cls}" data-act="cwLine" data-k="${k}" ${fin || tried || !t.trim() ? 'disabled' : ''}><i>${k+1}</i><span>${hl(t) || '&nbsp;'}</span></button>`; }).join('')}</div>`;
+  }
+  if (lv.t === 'gap'){
+    const parts = lv.code.split('___'); let h = '';
+    parts.forEach((p, k) => { h += hl(p); if (k < parts.length - 1){ const v = fin && st.sol ? cwGapShow(lv.ans[k]) : (st.gapv[k] || ''); const w = Math.max(3, Math.max(...lv.ans[k].map(a => a.startsWith('re:') ? 8 : a.length), v.length) + 1);
+      h += `<input class="cwgap ${st.gapBad[k] ? 'bad' : fin ? 'ok' : ''}" data-in="gap" data-k="${k}" value="${esc(v)}" style="width:${w}ch" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" ${fin ? 'disabled' : ''}>`; } });
+    return `<pre class="cwpre big gapbox">${h}</pre>`;
+  }
+  if (lv.t === 'order'){
+    const used = new Set(st.ord.map(o => o.k));
+    const pick = st.ord.map((o, n) => `<button class="cwol ${n < st.ordOk ? 'ok' : ''}" data-act="cwOrdDel" data-n="${n}" ${fin || n < st.ordOk ? 'disabled' : ''}><i>${n+1}</i><span>${hl(o.t)}</span></button>`).join('');
+    const rest = fin ? '' : st.ordAll.filter(o => !used.has(o.k)).map(o => `<button class="cwoc" data-act="cwOrdAdd" data-k="${o.k}"><span>${hl(o.t)}</span></button>`).join('');
+    const solv = fin && st.sol ? `<pre class="cwpre big">${hl(lv.lines.join('\n'))}</pre>` : '';
+    return `<div class="cwordbox">${pick || '<span class="muted">Tippe unten die Zeilen in der richtigen Reihenfolge an.</span>'}</div>${rest ? `<div class="cwochips">${rest}</div>` : ''}${solv}${lv.extra && lv.extra.length && !fin ? '<p class="muted small">Achtung: Eine Zeile ist zu viel.</p>' : ''}`;
+  }
+  if (lv.t === 'calc'){
+    return (lv.code ? `<pre class="cwpre big">${hl(lv.code)}</pre>` : '') + `<div class="cwcalc"><input class="exin ${st.calcBad ? 'bad' : ''}" data-in="calc" inputmode="decimal" value="${esc(fin && st.sol ? String(lv.ans).replace('.', ',') : st.calcv)}" placeholder="Deine Antwort" ${fin ? 'disabled' : ''}>${lv.unit ? `<span>${esc(lv.unit)}</span>` : ''}</div>`;
+  }
+  if (lv.t === 'code' || lv.t === 'turtle'){
+    const given = lv.given ? `<div class="cwgiven"><small>Schon vorgegeben</small><pre class="cwpre">${hl(lv.given)}</pre></div>` : '';
+    const keys = ['⇥', '⇤', ':', '( )', '[ ]', '" "', '=', '==', '_', '#', '+', '*'];
+    const r = st.res;
+    let out = '';
+    if (r){
+      if (r.fail) out = `<div class="cwerr"><b>Python ist gerade nicht verfügbar</b><p>${esc(r.fail)}</p></div>`;
+      else {
+        if (r.out) out += `<div class="cwout"><small>Ausgabe</small><pre>${esc(r.out)}</pre></div>`;
+        if (r.err) out += cwErr(r.err, st.ranCode);
+        if (!r.out && !r.err && !r.turtle) out += `<div class="cwout"><small>Ausgabe</small><pre class="muted">(keine Ausgabe – mit print(...) kannst du dir Werte anzeigen lassen)</pre></div>`;
+      }
+    }
+    const canvas = lv.t === 'turtle' ? `<div class="cwcanvas"><canvas id="cwcv"></canvas><small>Grau: so soll es aussehen · Rot: deine Zeichnung</small></div>` : '';
+    const sol = st.sol ? `<div class="cwgiven sol"><small>Lösung</small><pre class="cwpre">${hl(lv.solution)}</pre><button class="btn ghost small" data-act="cwUseSol">In den Editor übernehmen</button></div>` : '';
+    return given + `<div class="cwed"><textarea id="cwta" data-in="code" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" rows="${Math.max(6, st.code.split('\n').length + 1)}" ${st.done ? 'readonly' : ''}>${esc(st.code)}</textarea>
+      <div class="cwkeys">${keys.map(k => `<button class="cwkey" data-key="${esc(k)}">${esc(k)}</button>`).join('')}<button class="cwkey wide" data-key="reset">↺ Start</button></div></div>${canvas}${out}${sol}`;
+  }
+  return '';
+}
+const cwGapShow = a => a[0].startsWith('re:') ? '"Hamburg"' : a[0];
+function cwFeedback(lv, st){
+  if (lv.t === 'read') return '';
+  const T = st.test;
+  if (st.done){
+    const ok = T ? st.testOk : !st.sol;
+    const stars = !T ? `<span class="cwstars">${st.got ? '⭐'.repeat(st.got) : '👀'}</span>` : '';
+    const head = T ? (ok ? '✅ Richtig!' : '❌ Leider falsch') : st.sol ? 'Lösung angesehen – wiederhol das Level später nochmal' : st.wrong || st.hints ? '✅ Geschafft!' : '🏆 Perfekt – auf Anhieb!';
+    return `<div class="cwfb ${ok ? 'ok' : 'bad'}"><b>${head}${stars}</b>${md(lv.explain)}</div>`;
+  }
+  if (st.msg) return `<div class="cwfb ${st.msgOk ? 'ok' : 'bad'}"><b>${st.msg}</b></div>`;
+  return '';
+}
+const cwNorm = s => String(s).trim().replace(/\s+/g, ' ').replace(/'/g, '"').replace(/\s*([(),=\[\]])\s*/g, '$1');
+function cwGapOk(v, accepts){ return accepts.some(a => a.startsWith('re:') ? new RegExp(a.slice(3)).test(String(v).trim()) : cwNorm(v) === cwNorm(a)); }
+
+/* ---------- Turtle: zeichnen & vergleichen ---------- */
+function cwMerge(segs){
+  let s = segs.map(x => x.slice(0, 4)).filter(x => Math.hypot(x[2]-x[0], x[3]-x[1]) > 0.5), changed = true;
+  while (changed){ changed = false;
+    outer: for (let i = 0; i < s.length; i++) for (let j = i + 1; j < s.length; j++){
+      const a = s[i], b = s[j], pts = [[a[0],a[1]],[a[2],a[3]],[b[0],b[1]],[b[2],b[3]]];
+      const cross = (p, q, r) => (q[0]-p[0])*(r[1]-p[1]) - (q[1]-p[1])*(r[0]-p[0]);
+      const len = Math.hypot(a[2]-a[0], a[3]-a[1]);
+      if (Math.abs(cross(pts[0], pts[1], pts[2])) / len > 0.6 || Math.abs(cross(pts[0], pts[1], pts[3])) / len > 0.6) continue;
+      const dx = (a[2]-a[0]) / len, dy = (a[3]-a[1]) / len, pr = p => (p[0]-a[0])*dx + (p[1]-a[1])*dy;
+      const ta = [0, len], tb = [pr(pts[2]), pr(pts[3])].sort((x, y) => x - y);
+      if (tb[0] > ta[1] + 0.6 || tb[1] < ta[0] - 0.6) continue;
+      const lo = Math.min(0, tb[0]), hi = Math.max(len, tb[1]);
+      s[i] = [a[0] + dx*lo, a[1] + dy*lo, a[0] + dx*hi, a[1] + dy*hi]; s.splice(j, 1); changed = true; break outer;
+    }
+  }
+  return s;
+}
+function cwSame(user, target){
+  const A = cwMerge(user), B = cwMerge(target); if (!A.length || A.length !== B.length) return false;
+  const near = (x, y) => Math.abs(x - y) < 1.5, used = new Set();
+  return B.every(b => { const k = A.findIndex((a, i) => !used.has(i) && ((near(a[0],b[0]) && near(a[1],b[1]) && near(a[2],b[2]) && near(a[3],b[3])) || (near(a[0],b[2]) && near(a[1],b[3]) && near(a[2],b[0]) && near(a[3],b[1])))); if (k < 0) return false; used.add(k); return true; });
+}
+function cwDraw(){
+  const cv = document.getElementById('cwcv'), st = S.cwl; if (!cv || !st) return;
+  const lv = cwLv(cwCh(st.ch), st.lid), t = st.res && st.res.turtle, W = (t && t.w) || lv.target.w, H = (t && t.h) || lv.target.h;
+  const dpr = devicePixelRatio || 1, cssW = cv.parentElement.clientWidth - 4, sc = cssW / W;
+  cv.style.width = cssW + 'px'; cv.style.height = (H * sc) + 'px'; cv.width = cssW * dpr; cv.height = H * sc * dpr;
+  const x = cv.getContext('2d'); x.setTransform(dpr*sc, 0, 0, dpr*sc, 0, 0); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+  x.lineCap = 'round';
+  x.strokeStyle = 'rgba(0,0,0,.18)'; x.lineWidth = 7 / sc; x.beginPath(); lv.target.seg.forEach(s => { x.moveTo(s[0], s[1]); x.lineTo(s[2], s[3]); }); x.stroke();
+  if (t){
+    x.lineWidth = 3 / sc; t.seg.forEach(s => { x.strokeStyle = s[4] === 'black' ? '#E10600' : s[4]; x.beginPath(); x.moveTo(s[0], s[1]); x.lineTo(s[2], s[3]); x.stroke(); });
+    x.save(); x.translate(t.x, t.y); x.rotate(t.hd * Math.PI / 180); x.fillStyle = '#2FBF71'; x.beginPath(); const k = 9 / sc; x.moveTo(0, -1.6*k); x.lineTo(k, k); x.lineTo(-k, k); x.closePath(); x.fill(); x.restore();
+  }
+}
+
+/* ---------- Python ausführen ---------- */
+function cwInputs(code, dflt){
+  const ps = [...String(code).replace(/#[^\n]*/g, '').matchAll(/input\s*\(\s*(?:f?(["'])(.*?)\1)?/g)].map(mm => mm[2] || 'Eingabe');
+  const vals = [];
+  for (let i = 0; i < ps.length; i++){ const v = prompt(ps[i], (dflt && dflt[i] != null) ? dflt[i] : ''); if (v === null) return null; vals.push(v); }
+  return vals;
+}
+async function cwExec(check){
+  const st = S.cwl, ch = cwCh(st.ch), lv = cwLv(ch, st.lid); if (st.busy) return;
+  const code = st.code; let inputs = lv.inputs || [];
+  if (/___/.test(code.replace(/#[^\n]*/g, ''))){ st.msg = '✍️ Da sind noch Lücken (<code>___</code>) – ersetze sie zuerst durch deinen Code.'; st.msgOk = false; render(); return; }
+  if (check && code.trim() === String(lv.starter).trim()){ st.msg = '✍️ Schreib zuerst deinen Code – noch steht nur die Vorlage da.'; st.msgOk = false; render(); return; }
+  if (!check && /input\s*\(/.test(code)){ const v = cwInputs(code, lv.inputs); if (v === null) return; inputs = v; }
+  st.busy = true; st.msg = ''; render();
+  const req = { prelude: cwMod().coding.prelude, setup: ch.setup || lv.setup || '', given: lv.given || '', code, check: check && lv.t === 'code' ? lv.check : '', inputs };
+  const res = await pyCall(req, cwPk(ch, lv));
+  if (S.cwl !== st) return;
+  st.busy = false; st.res = res; st.ranCode = code;
+  if (check && !res.fail){
+    if (res.err){ cwWrong(); st.msg = '❌ Dein Code bricht mit einem Fehler ab – siehe unten.'; st.msgOk = false; }
+    else if (lv.t === 'turtle'){
+      if (res.turtle && cwSame(res.turtle.seg, lv.target.seg)) cwFinish(true);
+      else { cwWrong(); st.msg = res.turtle ? '❌ Deine Zeichnung sieht noch anders aus als die graue Vorlage.' : '❌ Es wurde nichts gezeichnet – fehlt initializeTurtle()?'; st.msgOk = false; }
+    } else if (res.check && res.check.ok) cwFinish(true);
+    else { cwWrong(); st.msg = '❌ ' + mdInline((res.check && res.check.msg) || 'Noch nicht ganz richtig.'); st.msgOk = false; }
+  }
+  render();
+}
+
+/* ---------- Aktionen ---------- */
+Object.assign(A, {
+  cwToggle: d => { const cur = S.cwShow; S.cwShow = cur === d.c ? '__none' : d.c; render(); },
+  cw: () => { S.cwl = null; S.cwt = null; go('cw'); },
+  cwOpen: d => cwOpen(d.c, d.l),
+  cwTest: d => cwStartTest(d.c),
+  cwPyRetry: () => { PY.state = 'idle'; PY.w = null; pyStatus(); pyCall(null, [], true); },
+  cwReadOk: () => { const st = S.cwl; P.cw.s[st.lid] = 3; save(); A.cwNext(); },
+  cwPick: d => { const st = S.cwl, lv = cwLv(cwCh(st.ch), st.lid), j = +d.j; if (st.done) return;
+    if (j === lv.a) cwFinish(true); else { st.tried.push(j); cwWrong(); } render(); },
+  cwLine: d => { const st = S.cwl, lv = cwLv(cwCh(st.ch), st.lid), k = +d.k; if (st.done) return;
+    if (k === lv.bad) cwFinish(true); else { st.tried.push(k); cwWrong(); st.msg = '❌ ' + (lv.why[k] ? mdInline(lv.why[k]) : 'Diese Zeile ist in Ordnung – such weiter.'); st.msgOk = false; } render(); },
+  cwGap: () => { const st = S.cwl, lv = cwLv(cwCh(st.ch), st.lid); if (st.done) return;
+    st.gapBad = lv.ans.map((a, k) => !cwGapOk(st.gapv[k] || '', a));
+    if (st.gapBad.every(b => !b)) cwFinish(true); else { cwWrong(); st.msg = `❌ ${st.gapBad.filter(Boolean).length === 1 ? 'Eine Lücke stimmt' : 'Die rot markierten Lücken stimmen'} noch nicht.`; st.msgOk = false; } render(); },
+  cwOrdAdd: d => { const st = S.cwl, o = st.ordAll.find(x => x.k === +d.k); if (o && !st.done) st.ord.push(o); st.msg = ''; render(); },
+  cwOrdDel: d => { const st = S.cwl; st.ord.splice(+d.n, 1); render(); },
+  cwOrdReset: () => { const st = S.cwl; st.ord = st.ord.slice(0, st.ordOk); render(); },
+  cwOrd: () => { const st = S.cwl, lv = cwLv(cwCh(st.ch), st.lid); if (st.done) return;
+    let k = 0; while (k < lv.lines.length && st.ord[k] && st.ord[k].t === lv.lines[k]) k++;
+    if (k === lv.lines.length) cwFinish(true);
+    else { cwWrong(); if (!st.test){ st.ordOk = k; st.ord = st.ord.slice(0, k); st.msg = `❌ Bis Zeile ${k} stimmt es${k ? '' : ' noch nicht'} – ${k ? 'ab da' : 'gleich die erste Zeile'} nochmal.`; st.msgOk = false; } } render(); },
+  cwCalc: () => { const st = S.cwl, lv = cwLv(cwCh(st.ch), st.lid); if (st.done) return;
+    const v = parseFloat(String(st.calcv).replace(/\s/g, '').replace('−', '-').replace(',', '.'));
+    if (isNaN(v)){ st.msg = 'Gib eine Zahl ein.'; st.msgOk = false; render(); return; }
+    if (Math.abs(v - lv.ans) <= (lv.tol || 1e-9)) cwFinish(true); else { st.calcBad = true; cwWrong(); st.msg = '❌ Das stimmt noch nicht – rechne nochmal Schritt für Schritt.'; st.msgOk = false; } render(); },
+  cwHint: () => { const st = S.cwl; st.hints++; render(); },
+  cwSol: () => { const st = S.cwl; st.sol = true; const lv = cwLv(cwCh(st.ch), st.lid); if (lv.t !== 'code' && lv.t !== 'turtle') cwFinish(false); else st.msg = ''; render(); },
+  cwUseSol: () => { const st = S.cwl, lv = cwLv(cwCh(st.ch), st.lid); st.code = lv.solution; P.cw.code[lv.id] = st.code; save(); render(); },
+  cwSkip: () => { const st = S.cwl; st.sol = true; cwFinish(false); render(); },
+  cwRun: () => cwExec(false),
+  cwCheck: () => cwExec(true),
+  cwRedo: () => { const st = S.cwl; cwOpen(st.ch, st.lid); },
+  cwNext: () => { const st = S.cwl, ch = cwCh(st.ch), i = ch.levels.findIndex(l => l.id === st.lid), nx = ch.levels[i + 1];
+    if (nx) cwOpen(ch.id, nx.id); else { S.cwl = null; go('cw'); if (cwAllDone(ch) && !cwPassed(ch)) toast('<span class="c">🏁</span> Jetzt der Kapiteltest!'); } },
+  cwTNext: () => { const T = S.cwt; if (!T) return;
+    if (T.idx + 1 < T.items.length){ T.idx++; const it = T.items[T.idx], c = cwCh(it.c); S.cwl = cwState(c, cwLv(c, it.l), T); render(); window.scrollTo(0,0); return; }
+    const p = Math.round(T.right / T.items.length * 100), ch = cwCh(T.ch); P.cw.t[ch.id] = Math.max(P.cw.t[ch.id] || 0, p); save();
+    S.cwRes = { ch: ch.id, p, r: T.right, n: T.items.length }; S.cwt = null; S.cwl = null; go('cwres'); if (p >= 80) confetti(); },
+  cwQuitTest: () => { S.cwt = null; S.cwl = null; go('cw'); },
+});
+function vCwRes(){
+  const R = S.cwRes, ch = cwCh(R.ch), ok = R.p >= 80, chs = cwChs(), nx = chs[chs.indexOf(ch) + 1];
+  return `<div class="wrap fade"><div class="top">${backBtn('cw', 'Coding-Welt')}</div>
+    <div class="cwresbox ${ok ? 'ok' : ''}"><div class="cwbig">${ok ? '🏆' : '💪'}</div><h1>${R.p} %</h1><p>${R.r} von ${R.n} richtig · ${esc(ch.title)}</p>
+    <p>${ok ? (nx ? `Bestanden! <b>${esc(nx.title)}</b> ist jetzt freigeschaltet.` : 'Bestanden – du hast alles geschafft, was bisher dran war!') : 'Ab 80 % geht es weiter. Schau dir die Level mit wenig Sternen nochmal an und versuch es dann erneut.'}</p>
+    <div class="btnrow" style="justify-content:center">${ok ? `<button class="btn acc" data-act="cw">Weiter zur Karte</button>` : `<button class="btn acc" data-act="cwTest" data-c="${ch.id}">Nochmal versuchen</button><button class="btn ghost" data-act="cw">Zur Karte</button>`}</div></div></div>`;
+}
+
+/* Eingaben ohne Neuzeichnen merken */
+app.addEventListener('input', e => {
+  const el = e.target, st = S.cwl; if (!st || !el.dataset || !el.dataset.in) return;
+  if (el.dataset.in === 'gap'){ st.gapv[+el.dataset.k] = el.value; el.classList.remove('bad'); }
+  else if (el.dataset.in === 'calc'){ st.calcv = el.value; el.classList.remove('bad'); }
+  else if (el.dataset.in === 'code'){ st.code = el.value; P.cw.code[st.lid] = el.value; clearTimeout(cwSaveT); cwSaveT = setTimeout(save, 800); el.rows = Math.max(6, el.value.split('\n').length + 1); }
+});
+let cwSaveT = 0;
+function cwInsert(ta, text, back){
+  const a = ta.selectionStart, b = ta.selectionEnd; ta.value = ta.value.slice(0, a) + text + ta.value.slice(b);
+  const pos = a + text.length - (back || 0); ta.selectionStart = ta.selectionEnd = pos; ta.dispatchEvent(new Event('input', { bubbles:true }));
+}
+app.addEventListener('keydown', e => {
+  const ta = e.target; if (ta.id !== 'cwta') return;
+  if (e.key === 'Tab'){ e.preventDefault(); cwInsert(ta, '    '); }
+  else if (e.key === 'Enter'){ e.preventDefault(); const before = ta.value.slice(0, ta.selectionStart), ln = before.split('\n').pop(); let ind = (ln.match(/^ */) || [''])[0]; if (/:\s*$/.test(ln)) ind += '    '; cwInsert(ta, '\n' + ind); }
+});
+app.addEventListener('pointerdown', e => {
+  const k = e.target.closest('.cwkey'); if (!k) return; e.preventDefault();
+  const ta = document.getElementById('cwta'); if (!ta || ta.readOnly) return; const key = k.dataset.key;
+  if (key === 'reset'){ if (!confirm('Deinen Code auf den Anfang zurücksetzen?')) return; const st = S.cwl, lv = cwLv(cwCh(st.ch), st.lid); ta.value = lv.starter; ta.dispatchEvent(new Event('input', { bubbles:true })); return; }
+  ta.focus();
+  if (key === '⇥') return cwInsert(ta, '    ');
+  if (key === '⇤'){ const a = ta.selectionStart, s0 = ta.value.lastIndexOf('\n', a - 1) + 1, n = (ta.value.slice(s0).match(/^ {1,4}/) || [''])[0].length; if (!n) return;
+    ta.value = ta.value.slice(0, s0) + ta.value.slice(s0 + n); ta.selectionStart = ta.selectionEnd = Math.max(s0, a - n); ta.dispatchEvent(new Event('input', { bubbles:true })); return; }
+  if (key === '( )') return cwInsert(ta, '()', 1);
+  if (key === '[ ]') return cwInsert(ta, '[]', 1);
+  if (key === '" "') return cwInsert(ta, '""', 1);
+  cwInsert(ta, key === '==' || key === '=' || key === '+' || key === '*' ? ' ' + key + ' ' : key);
 });
 
 app.addEventListener('change', e => {
