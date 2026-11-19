@@ -77,19 +77,21 @@ h1,h2,h3,.disp{font-family:"Bricolage Grotesque",Nunito,sans-serif;letter-spacin
 .mcard{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);text-align:left;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;transition:transform .15s}
 .mcard:active{transform:scale(.98)}
 .mcard{cursor:pointer;-webkit-tap-highlight-color:transparent}
-.mtop{display:flex;align-items:flex-start;gap:12px}
-.upd{flex:1;min-width:0;display:flex;align-items:center;gap:10px;line-height:1.2}
-.updic{flex:none;width:56px;height:56px;border-radius:18px;background:var(--accsoft);display:grid;place-items:center;font-size:28px}
+.mtop{display:flex;align-items:center;gap:14px}
+.mtop .memo{width:60px;height:60px;border-radius:12px;flex:none;font-size:30px}
+.upd{flex:1;min-width:0;overflow:hidden;height:60px;display:flex;align-items:center;justify-content:center;gap:8px;padding:0 12px;border-radius:12px;background:var(--accsoft);color:#fff;line-height:1.2}
+.upd.empty{background:transparent}
+.updic{flex:none;font-size:28px;font-weight:700;color:#fff;line-height:1}
 .updt{min-width:0}
-@media (max-width:900px){.updic{width:46px!important;height:46px!important;font-size:23px!important;border-radius:15px!important}.mtop{gap:8px!important}.upd{gap:8px!important}.calw{max-width:96px!important}.cd{font-size:12px!important}.cd small{font-size:10px!important}}
-.upd b{display:block;font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap}.upd.fresh b{color:var(--gold)}
-.upd small{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;font-weight:700;color:var(--ink);margin-top:2px}
-.calw{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;margin-left:auto;flex:none;max-width:132px;text-align:center;padding:4px 6px 4px 4px;border-radius:14px;cursor:pointer}
-.calw:active{background:rgba(255,255,255,.05)}
-.cal{width:52px;border-radius:12px;overflow:hidden;background:#fff;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.35);flex:none;line-height:1}
+.upd b{display:block;font-size:12px;font-weight:800;color:#fff;white-space:nowrap}.upd.fresh b{color:var(--gold)}
+.upd small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11px;font-weight:700;color:rgba(255,255,255,.85);margin-top:2px}
+.calw{position:relative;display:flex;align-items:center;gap:10px;flex:none;padding:0;border-radius:14px;cursor:pointer}
+.calw:active{opacity:.8}
+.cal{width:60px;height:60px;border-radius:12px;overflow:hidden;background:#fff;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.35);flex:none;line-height:1;display:flex;flex-direction:column}
 .cal i{display:block;background:var(--acc);color:#fff;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 0}
-.cal b{display:block;color:#111;font-size:24px;font-weight:800;padding:5px 0 6px}
-.cd{font-weight:800;font-size:14px;color:var(--ink);line-height:1.15;text-align:center}.cd small{display:block;color:var(--muted);font-size:11px;font-weight:700}
+.cal b{flex:1;display:grid;place-items:center;color:#111;font-size:26px;font-weight:800}
+.cd{font-weight:800;font-size:14px;color:var(--ink);line-height:1.15;text-align:left;max-width:120px}.cd small{display:block;color:var(--muted);font-size:11px;font-weight:700}
+@media (max-width:900px){.upd{flex-direction:column;gap:3px;padding:0 6px;overflow:hidden}.updic{font-size:22px}.upd small,.upd .lbl{display:none}.upd b{font-size:11px}.mtop{gap:10px}.cd{font-size:13px;max-width:96px}}
 .cd.hot{color:var(--acc)}
 .exin{display:block;width:100%;margin-top:6px;background:var(--card2);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:16px;font-weight:700;-webkit-appearance:none;appearance:none;min-height:48px;box-sizing:border-box}
 .exin::-webkit-calendar-picker-indicator{filter:invert(1)}
@@ -423,7 +425,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '37';
+const APP_VERSION = '38';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1030,10 +1032,10 @@ function openExamEditor(mid){
   </div>`;
 }
 function updBox(m){
-  if (!m.lastUpdate) return '';
+  if (!m.lastUpdate) return '<div class="upd empty"></div>';
   const [y,mo,d] = String(m.lastUpdate).split('-').map(Number), dt = new Date(y, mo-1, d), t = new Date(); t.setHours(0,0,0,0);
   const n = Math.round((t - dt) / DAY), when = n <= 0 ? 'heute' : n === 1 ? 'gestern' : `${String(d).padStart(2,'0')}.${String(mo).padStart(2,'0')}.`;
-  return `<div class="upd${n <= 2 ? ' fresh' : ''}"><span class="updic">🔄</span><span class="updt"><b>Stoff · ${when}</b><small>${esc(m.updateNote || '')}</small></span></div>`;
+  return `<div class="upd${n <= 2 ? ' fresh' : ''}"><span class="updic">↻</span><span class="updt"><b><span class="lbl">Stoff · </span>${when}</b><small>${esc(m.updateNote || '')}</small></span></div>`;
 }
 function modCard(m){
   const st = stats(m), last = P.tests.filter(t => t.m===m.id && t.mode==='mix').slice(-1)[0], nd = dueQs(m).length;
