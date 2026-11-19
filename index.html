@@ -416,7 +416,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '34';
+const APP_VERSION = '35';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1153,26 +1153,33 @@ function vPuzzle(){
 function pzDom(){
   const z = S.pz, box = document.getElementById('pzfig'); if (!z || !box) return;
   const svg = box.querySelector('svg'), texts = [...svg.querySelectorAll('text')], NS = 'http://www.w3.org/2000/svg';
+  const vb = svg.viewBox.baseVal, k0 = (vb && vb.width ? vb.width : 760) / 760;
   const layer = document.createElementNS(NS, 'g'); svg.appendChild(layer);
+  const set = (el, o) => Object.entries(o).forEach(([a,v]) => el.setAttribute(a, v));
+  // Alle leeren Lücken gleich groß – die Größe darf nicht verraten, welche Karte hineingehört
+  const EW = 92 * k0, EH = 32 * k0;
   z.slots.forEach((s, k) => {
     const t = texts[s.i]; if (!t) return;
     const bb = t.getBBox(); t.style.visibility = 'hidden';
-    const pad = 6, w = Math.max(bb.width + 2*pad, 54), h = Math.max(bb.height + 2*pad, 28), x = bb.x + bb.width/2 - w/2, y = bb.y + bb.height/2 - h/2;
-    const g = document.createElementNS(NS, 'g'); g.setAttribute('data-act', 'pzSlot'); g.setAttribute('data-s', k); g.style.cursor = 'pointer';
-    const r = document.createElementNS(NS, 'rect');
-    Object.entries({ x, y, width:w, height:h, rx:10, fill: s.placed !== null ? '#1C1C22' : '#0B0B0E', stroke: s.ok === true ? '#2FBF71' : s.ok === false ? '#FF4545' : (z.sel !== null ? '#FFC83D' : '#E10600'), 'stroke-width': 3 }).forEach(([a,v]) => r.setAttribute(a, v));
-    if (s.placed === null) r.setAttribute('stroke-dasharray', '7 5');
-    g.appendChild(r); layer.appendChild(g);   // erst einhängen, sonst liefert getBBox() 0
+    const cx = bb.x + bb.width/2, cy = bb.y + bb.height/2;
+    const g = document.createElementNS(NS, 'g'); set(g, { 'data-act':'pzSlot', 'data-s':k }); g.style.cursor = 'pointer';
+    const r = document.createElementNS(NS, 'rect'); g.appendChild(r); layer.appendChild(g);   // erst einhängen, sonst liefert getBBox() 0
+    const stroke = s.ok === true ? '#2FBF71' : s.ok === false ? '#FF4545' : (z.sel !== null ? '#FFC83D' : '#E10600');
     if (s.placed !== null){
-      const chip = z.chips.find(c => c.id === s.placed), src = texts[chip.i], cl = src.cloneNode(true);
-      cl.style.visibility = 'visible'; cl.removeAttribute('data-act');
+      const chip = z.chips.find(c => c.id === s.placed), cl = texts[chip.i].cloneNode(true);
+      cl.style.visibility = 'visible';
       if (s.ok === true) cl.setAttribute('fill', '#2FBF71');
       g.appendChild(cl);
-      const cb = cl.getBBox(), sc = Math.min(1, (w - 8) / cb.width, (h - 4) / cb.height);
-      cl.setAttribute('transform', `translate(${x + w/2} ${y + h/2}) scale(${sc}) translate(${-(cb.x + cb.width/2)} ${-(cb.y + cb.height/2)})`);
+      const cb = cl.getBBox(), maxW = (vb && vb.width ? vb.width : 760) - 16 * k0, sc = Math.min(1, maxW / (cb.width + 16 * k0));
+      const w = (cb.width + 16 * k0) * sc, h = (cb.height + 10 * k0) * sc;
+      // im Bild halten: lange Karten nicht über den Rand hinausschieben
+      const vx = vb && vb.width ? vb.x : 0, vw = vb && vb.width ? vb.width : 760, px = Math.min(Math.max(cx, vx + 6*k0 + w/2), vx + vw - 6*k0 - w/2);
+      cl.setAttribute('transform', `translate(${px} ${cy}) scale(${sc}) translate(${-(cb.x + cb.width/2)} ${-(cb.y + cb.height/2)})`);
+      set(r, { x: px - w/2, y: cy - h/2, width: w, height: h, rx: 10 * k0, fill: '#1C1C22', stroke, 'stroke-width': 3 * k0 });
     } else {
+      set(r, { x: cx - EW/2, y: cy - EH/2, width: EW, height: EH, rx: 10 * k0, fill: '#0B0B0E', stroke, 'stroke-width': 3 * k0, 'stroke-dasharray': `${7*k0} ${5*k0}` });
       const n = document.createElementNS(NS, 'text');
-      Object.entries({ x: x + w/2, y: y + h/2 + 1, 'text-anchor':'middle', 'dominant-baseline':'middle', 'font-size': 15, 'font-weight': 800, fill: '#E10600' }).forEach(([a,v]) => n.setAttribute(a, v));
+      set(n, { x: cx, y: cy + 1, 'text-anchor':'middle', 'dominant-baseline':'middle', 'font-size': 15 * k0, 'font-weight': 800, fill: '#E10600' });
       n.textContent = '?'; g.appendChild(n);
     }
   });
