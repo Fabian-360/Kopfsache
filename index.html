@@ -508,7 +508,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '40';
+const APP_VERSION = '41';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1878,8 +1878,8 @@ function towerStats(t){
 const upCost = t => Math.round(TOWERS[t.type].cost * 0.7 * t.level);
 // überstandene Wellen der laufenden Runde
 const survivedNow = G => !G ? 0 : (G.phase === 'build' || G.phase === 'quiz') ? G.wave : Math.max(0, G.wave - 1);
-// Freigeschaltet „ab Welle X“: sobald X−1 Wellen überstanden sind – im Rekord ODER in der laufenden Runde
-const towerUnlocked = (k, G = S.play) => { const u = TOWERS[k].unlock; return !u || Math.max(bestWaveAll(), survivedNow(G && !G.over ? G : null)) >= u - 1; };
+// Freigeschaltet „ab Welle X“: in jeder Runde neu, sobald X−1 Wellen überstanden sind
+const towerUnlocked = (k, G = S.play) => { const u = TOWERS[k].unlock; return !u || survivedNow(G && !G.over ? G : null) >= u - 1; };
 
 /* ---------- Fragen fürs Spiel: aus dem bestehenden Lernsystem ---------- */
 function gamePickQuestion(G){
@@ -1954,9 +1954,7 @@ function gameStartWave(){
   const spec = waveSpec(G.wave); G.theme = spec.theme;
   G.queue = spec.list.map(t => ({ t })).concat(G.queue.filter(x => x.extra));
   const hasBoss = spec.list.some(t => ENEMY[t].boss);
-  if (hasBoss){ banner(G, `👹 Welle ${G.wave} · Boss!`, ENEMY[spec.list[spec.list.length-1]].name + ' greift an', '#FF4545'); }
-  else if (spec.theme){ banner(G, `Welle ${G.wave} · ${WAVE_THEMES[spec.theme].label}`, WAVE_THEMES[spec.theme].sub, '#FFC83D'); }
-  else { banner(G, `🌊 Welle ${G.wave}`, ''); }
+  G.banner = { wave: G.wave, boss: hasBoss, t: 1.6 };
   G.sel = null; renderGameUI();
 }
 function spawnEnemy(G, t, d){
@@ -2321,7 +2319,15 @@ function drawGame(G, ts){
   // Treffer-Blitz
   for (const f of G.fx) if (f.k === 'hit'){ ctx.fillStyle = 'rgba(225,6,0,' + (f.t*0.45) + ')'; ctx.fillRect(0,0,GW,GH); }
   // Banner
-  if (G.banner && !G.q){
+  if (G.banner && G.banner.wave && !G.q){
+    const b = G.banner, a = Math.min(1, b.t * 3, (1.6 - b.t) * 6), k = 0.85 + 0.15 * Math.min(1, (1.6 - b.t) * 5), R = 64 * k;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.globalAlpha = a; ctx.fillStyle = 'rgba(225,6,0,.92)'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.arc(GW/2, GH/2, R, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold ' + Math.round(56 * k) + 'px sans-serif'; ctx.fillText(b.wave, GW/2, GH/2 + 4);
+    if (b.boss){ ctx.font = Math.round(26 * k) + 'px serif'; ctx.fillText('👹', GW/2, GH/2 - R - 4); }
+    ctx.globalAlpha = 1;
+  } else if (G.banner && !G.q){
     const b = G.banner, a = Math.min(1, b.t * 2, (2.2 - b.t) * 5), y = GH * 0.42;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, y - 44, GW, b.sub ? 92 : 70);
     ctx.font = 'bold 38px sans-serif'; ctx.fillStyle = b.color; ctx.fillText(b.txt, GW/2, y - 8);
