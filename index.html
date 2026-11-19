@@ -416,7 +416,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '33';
+const APP_VERSION = '34';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1122,7 +1122,7 @@ function pzNew(mid, fid){
   S.pz = { mid, fid, slots: pick.map(c => ({ i:c.i, key:c.key, placed:null, ok:null })), chips: shuffle(pick.map((c,j) => ({ id:j, i:c.i, key:c.key }))), sel:null, errors:0, done:false };
   S.view = 'puzzle'; render(); window.scrollTo(0,0);
 }
-const pzFigs = m => { m._pzf = m._pzf || Object.keys(m.figures||{}).filter(f => pzCandidates(m.figures[f].svg).length >= 2); return m._pzf; };
+const pzFigs = m => { m._pzf = m._pzf || Object.keys(m.figures||{}).filter(f => !m.figures[f].nopuzzle && pzCandidates(m.figures[f].svg).length >= 2); return m._pzf; };
 function vPuzzles(){
   const m = mod(), figs = pzFigs(m);
   const cards = figs.map(f => { const r = P.puzzles[m.id+'::'+f] || {};
