@@ -270,6 +270,9 @@ body.edopen{overflow:hidden}
 .gstage{--side:132px;--cw:min(calc(100vw - 24px - var(--side) - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100vh - 230px) * 1.5625));margin:auto;display:flex;flex-direction:column;width:calc(var(--cw) + var(--side) + 12px)}
 @supports (height:100dvh){.gstage{--cw:min(calc(100vw - 24px - var(--side) - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc((100dvh - 230px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 1.5625))}}
 .gtop{display:flex;align-items:center;gap:10px;margin-bottom:12px;min-height:48px}
+.gquit{font-size:40px;line-height:1;font-weight:300;color:#fff;background:none;border:0;padding:0 8px;min-width:44px;min-height:44px}
+#gui{height:84px;overflow:hidden}
+#gui .ghint{margin-top:8px}
 .gmain{display:flex;gap:12px;align-items:stretch}
 .gside{width:var(--side);flex:none;display:flex;flex-direction:column;gap:10px}
 .gh{flex:1;min-height:0;background:#000;border:2px solid var(--acc);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px;text-align:center}
@@ -345,7 +348,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 .opt .l.box{border-radius:8px}
 .opt.ok.miss{border-style:dashed}
 .mhint{font-size:14px;color:var(--gold);font-weight:700;margin:-6px 0 14px}
-.fb .ex{margin-top:6px}
+.fb .ex{margin-top:6px;white-space:pre-line}
 .fb ul.rl{margin:4px 0 0;padding-left:20px}
 .fig{margin:22px 0;padding:0}
 .fig svg{width:100%;height:auto;display:block;border-radius:18px}
@@ -508,7 +511,7 @@ pre.code.sm{font-size:13px;padding:10px 12px;margin:6px 0 8px}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '41';
+const APP_VERSION = '43';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1769,12 +1772,13 @@ const ENEMY = {
   schild: { name:'Schildträger', hp:1.3,  speed:52,  r:14, color:'#5B8DEF', lives:2,  score:25,  shield:1.3, info:'Schild muss erst weg – Gift geht durch', from:6 },
   heiler: { name:'Heiler',       hp:1.2,  speed:55,  r:13, color:'#2FBF71', lives:1,  score:25,  heal:0.07, info:'heilt Gegner in der Nähe – zuerst ausschalten', from:8 },
   teiler: { name:'Teiler',       hp:1.8,  speed:50,  r:14, color:'#FF6FB5', lives:2,  score:20,  split:2, info:'zerfällt in 2 Splitter', from:11 },
-  geist:  { name:'Geist',        hp:1,    speed:44,  r:16, color:'#DDE6FF', lives:2,  score:40,  ghost:true, info:'Türme treffen ihn nicht: antippen + Frage richtig = besiegt, falsch = noch ein Geist', from:2 },
+  geist:  { name:'Geist',        hp:1,    speed:40,  r:16, color:'#DDE6FF', lives:2,  score:40,  ghost:true, fly:true, info:'fliegt auf direktem Weg zur Burg · Türme treffen ihn nicht: antippen + Frage richtig = besiegt, falsch = noch ein Geist', from:2 },
+  zombie: { name:'Zombie',       hp:2.2,  speed:36,  r:15, color:'#6E9A45', lives:2,  score:40,  zombie:true, icon:'🧟', info:'bringt nur Fragen, die du falsch beantwortet hast: antippen + richtig = besiegt, falsch = noch ein Zombie · hast du keine Fehlerfragen, können ihn die Türme abschießen', from:4 },
   mini:   { name:'Splitter',     hp:0.35, speed:96,  r:8,  color:'#FFA6D5', lives:1,  score:5 },
   koloss: { name:'Koloss',       hp:9,    speed:28,  r:22, color:'#8A7A6A', lives:6,  score:100, shield:2, boss:true, icon:'🗿', info:'Boss in Welle 5, 15, 25 … mit Schild' },
   boss:   { name:'Dämon',        hp:14,   speed:30,  r:24, color:'#FF2A1F', lives:10, score:150, boss:true, icon:'👹', info:'Boss in Welle 10, 20, 30 …' },
 };
-const ENEMY_INFO = ['normal','geist','schnell','panzer','schild','heiler','teiler','koloss','boss'];
+const ENEMY_INFO = ['normal','geist','zombie','schnell','panzer','schild','heiler','teiler','koloss','boss'];
 const GW = 1000, GH = 640;
 
 /* ---------- Karten ---------- */
@@ -1805,10 +1809,17 @@ function distToPathP(path, x, y){
   return best;
 }
 function seeded(s){ return () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const isTap = (G, e) => !!(ENEMY[e.t].ghost || (ENEMY[e.t].zombie && G && G.zImm));
+const wrongQs = G => (G.m.questions||[]).filter(q => status(G.m, q) === 'w');
+function epos(e){
+  if (!ENEMY[e.t].fly) return posAt(e.d);
+  const [a, b] = MAP.fly, f = Math.min(1, e.d / MAP.flyLen); return [a[0] + (b[0]-a[0])*f, a[1] + (b[1]-a[1])*f];
+}
 function prepMap(m){
   if (m.seg) return m;
   m.seg = m.path.slice(1).map((p,i) => Math.hypot(p[0]-m.path[i][0], p[1]-m.path[i][1]));
   m.len = m.seg.reduce((a,b) => a+b, 0);
+  const st = m.path[0][0] < 0 ? [10, m.path[0][1]] : m.path[0]; m.fly = [st, m.castle]; m.flyLen = Math.hypot(m.castle[0]-st[0], m.castle[1]-st[1]);
   const nearCastle = (x,y,r) => Math.hypot(x-m.castle[0], y-m.castle[1]) < r;
   if (m.slotsRaw) m.slots = m.slotsRaw.filter(([x,y]) => distToPathP(m.path,x,y) >= 55);
   else {
@@ -1826,6 +1837,7 @@ function prepMap(m){
     deco.push({ x, y, e: m.deco[Math.floor(rnd()*m.deco.length)], s: 20 + rnd()*14, a: 0.35 + rnd()*0.3 });
   }
   m.decoPts = deco;
+  m.slotsAll = m.slots; m.slots = m.slots.filter((_, i) => i % 4 !== 3);   // 25 % weniger Bauplätze
   return m;
 }
 let MAP = prepMap(MAPS.wald);
@@ -1866,10 +1878,11 @@ function waveSpec(n){
     list.push(t);
   }
   if (n >= 2){ const g = 1 + Math.floor((n - 2) / 5); for (let i = 0; i < g; i++) list.splice(Math.floor(list.length * (i + 1) / (g + 1)), 0, 'geist'); }
+  if (n >= 4){ const z = 1 + Math.floor((n - 4) / 5); for (let i = 0; i < z; i++) list.splice(Math.floor(list.length * (i + 0.5) / z), 0, 'zombie'); }
   if (n % 5 === 0) list.push(n % 10 === 0 ? 'boss' : 'koloss');
   return { list, theme };
 }
-const hpBase = n => (n <= 2 ? 22 : 26) * Math.pow(1.17, n-1);
+const hpBase = n => (n <= 2 ? 28 : 34) * Math.pow(1.18, n-1);
 function towerStats(t){
   const b = TOWERS[t.type], L = t.level - 1;
   return { dmg: b.dmg * Math.pow(1.5, L), range: b.range * (1 + 0.12*L), rate: b.rate * Math.pow(0.86, L), splash: b.splash ? b.splash * (1 + 0.1*L) : 0, slow: b.slow, chain: b.chain ? b.chain + L : 0,
@@ -1882,7 +1895,9 @@ const survivedNow = G => !G ? 0 : (G.phase === 'build' || G.phase === 'quiz') ? 
 const towerUnlocked = (k, G = S.play) => { const u = TOWERS[k].unlock; return !u || survivedNow(G && !G.over ? G : null) >= u - 1; };
 
 /* ---------- Fragen fürs Spiel: aus dem bestehenden Lernsystem ---------- */
-function gamePickQuestion(G){
+function gamePickQuestion(G, onlyWrong){
+  if (onlyWrong){ const w = wrongQs(G); if (w.length){ const q = rand(w), m = G.m, e = P.q[key(m,q)] || { r:0, w:0 };
+    return { qid:q.id, b:buildQ(q, m), chosen:null, sel:[], level: q.level || 2, repeat:false, wasRed:true, start: performance.now(), onDone: gameOnAnswer }; } }
   const m = G.m, qs = (m.questions||[]).filter(q => !G.used.has(q.id));
   const pool = qs.length ? qs : (m.questions||[]);
   if (!qs.length) G.used.clear();
@@ -1895,7 +1910,7 @@ function gamePickQuestion(G){
   return { qid:q.id, b:buildQ(q, m), chosen:null, sel:[], level: q.level || 2, repeat, wasRed: e.last === 'w', start: performance.now(), onDone: gameOnAnswer };
 }
 function gameAsk(G, kind){
-  G.q = gamePickQuestion(G); G.qKind = kind; G.paused = true; G.reward = null;
+  G.q = gamePickQuestion(G, kind === 'zombie'); G.qKind = kind; G.paused = true; G.reward = null;
   renderGameUI();
 }
 function gameOnAnswer(it){
@@ -1909,11 +1924,11 @@ function gameOnAnswer(it){
     const total = (base + bonus) * mult;
     G.coins += total; G.earned += total; G.right++;
     G.reward = { ok:true, base, bonus, mult, total };
-    if (G.qKind === 'ghost' && G.ghost && !G.ghost.dead){ damage(G, G.ghost, 1e9, true, false, true); G.reward.ghost = 'tot'; }
+    if ((G.qKind === 'ghost' || G.qKind === 'zombie') && G.ghost && !G.ghost.dead){ damage(G, G.ghost, 1e9, true, false, true); G.reward.ghost = G.qKind; }
   } else {
     G.streak = 0; G.errStreak++; st.wrong++; G.wrong++;
     let extra = [];
-    if (G.qKind === 'ghost'){ G.errStreak--; spawnEnemy(G, 'geist'); G.reward = { ok:false, extra:[], ghost:'neu', timeout: !!it.timeout }; save(); return; }
+    if (G.qKind === 'ghost' || G.qKind === 'zombie'){ G.errStreak--; const nd = G.ghost ? Math.max(0, G.ghost.d - 60) : 0; spawnEnemy(G, G.qKind === 'ghost' ? 'geist' : 'zombie', G.qKind === 'zombie' ? nd : 0); G.reward = { ok:false, extra:[], ghost:G.qKind, timeout: !!it.timeout }; save(); return; }
     if (G.phase !== 'quiz'){
       if (G.errStreak === 1) extra = ['normal'];
       else if (G.errStreak === 2) extra = ['normal','normal'];
@@ -1960,6 +1975,7 @@ function gameStartWave(){
 function spawnEnemy(G, t, d){
   const e = ENEMY[t], hp = hpBase(G.wave) * e.hp, sh = e.shield ? hpBase(G.wave) * e.shield : 0;
   G.enemies.push({ t, d: d || 0, hp, max:hp, sh, shMax:sh, speed:e.speed, slowT:0, poisonT:0, poisonDps:0, r:e.r, hitT:0, ph: Math.random()*6.28, healT: Math.random() });
+  if (e.zombie && !G.zombieSeen){ G.zombieSeen = 1; G.zImm = wrongQs(G).length > 0; banner(G, '🧟 Ein Zombie!', G.zImm ? 'Er bringt deine Fehlerfragen zurück – antippen und richtig beantworten' : 'Du hast gerade keine Fehlerfragen – die Türme können ihn abschießen', '#9BD46A'); renderGameUI(); }
   if (e.ghost){
     if (!G.ghostSeen){ G.ghostSeen = 1; banner(G, '👻 Ein Geist!', 'Türme treffen ihn nicht – tippe ihn an und beantworte die Frage', '#DDE6FF'); }
     renderGameUI();
@@ -1981,13 +1997,15 @@ function gameSave(G){
   if (!G || G.over || (G.phase !== 'build' && G.phase !== 'quiz')) return;
   P.game.saves[G.m.id] = { t: Date.now(), map: G.map, phase: G.phase, quizN: G.quizN, wave: G.wave, coins: G.coins, earned: G.earned, lives: G.lives,
     towers: G.towers.map(t => ({ type: t.type, slot: t.slot, level: t.level, spent: t.spent })), extra: G.queue.filter(x => x.extra).map(x => x.t),
-    streak: G.streak, errStreak: G.errStreak, right: G.right, wrong: G.wrong, kills: G.kills, score: G.score, unl: [...G.unl] };
+    streak: G.streak, errStreak: G.errStreak, right: G.right, wrong: G.wrong, kills: G.kills, score: G.score, unl: [...G.unl], sl: 2 };
   save();
 }
 function gameResume(m){
   const sv = P.game.saves[m.id]; if (!sv) return;
   MAP = prepMap(MAPS[sv.map] || MAPS.wald);
-  const G = S.play = { m, map: MAPS[sv.map] ? sv.map : 'wald', smult: MAP_MULT[MAP.diff] || 1, phase: sv.phase === 'quiz' ? 'quiz' : 'build', coins: sv.coins||0, earned: sv.earned||0, lives: sv.lives||GCFG.lives, wave: sv.wave||0,
+  let refund = 0;
+  if (sv.sl !== 2) sv.towers = (sv.towers||[]).map(t => { const p = MAP.slotsAll[t.slot], i = p ? MAP.slots.indexOf(p) : -1; if (i < 0){ refund += t.spent || 0; return null; } return { ...t, slot: i }; }).filter(Boolean);
+  const G = S.play = { m, map: MAPS[sv.map] ? sv.map : 'wald', smult: MAP_MULT[MAP.diff] || 1, phase: sv.phase === 'quiz' ? 'quiz' : 'build', coins: (sv.coins||0) + refund, earned: sv.earned||0, lives: sv.lives||GCFG.lives, wave: sv.wave||0,
     towers: (sv.towers||[]).filter(t => TOWERS[t.type] && MAP.slots[t.slot]).map(t => ({ type: t.type, slot: t.slot, pos: MAP.slots[t.slot], level: t.level||1, cd: 0, spent: t.spent||TOWERS[t.type].cost, fireT: 0 })),
     enemies:[], shots:[], bolts:[], fx:[], parts:[], floats:[], born:[], queue: (sv.extra||[]).filter(t => ENEMY[t]).map(t => ({ t, extra:true })), spawnT:0, waveT:0, nextQ:GCFG.firstQ,
     streak: sv.streak||0, errStreak: sv.errStreak||0, right: sv.right||0, wrong: sv.wrong||0, kills: sv.kills||0, score: sv.score||0, speed:1, sel:null, used:new Set(), quizN: sv.quizN||0, q:null, paused: false, over:false, last:0, shake:0, theme:null,
@@ -2044,6 +2062,7 @@ function burst(G, x, y, color, n, sp){
   for (let i = 0; i < n; i++){ const a = Math.random()*6.28, v = (sp||120) * (0.4 + Math.random()); G.parts.push({ x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, t:0.4 + Math.random()*0.35, c:color, s:2 + Math.random()*3 }); }
 }
 function gameStep(G, dt){
+  if (G.zT === undefined || (G.zT -= dt) <= 0){ G.zT = 0.5; G.zImm = wrongQs(G).length > 0; }
   G.waveT += dt;
   // Gegner erzeugen
   G.spawnT -= dt;
@@ -2060,27 +2079,27 @@ function gameStep(G, dt){
     const d = ENEMY[e.t];
     if (d.heal){
       e.healT -= dt;
-      if (e.healT <= 0){ e.healT = 1.2; const [hx,hy] = posAt(e.d); let any = false;
-        for (const o of G.enemies){ if (o.dead || o.hp >= o.max || ENEMY[o.t].ghost) continue; const [ox,oy] = posAt(o.d); if (Math.hypot(ox-hx, oy-hy) <= 85){ o.hp = Math.min(o.max, o.hp + o.max * d.heal); any = true; } }
+      if (e.healT <= 0){ e.healT = 1.2; const [hx,hy] = epos(e); let any = false;
+        for (const o of G.enemies){ if (o.dead || o.hp >= o.max || ENEMY[o.t].ghost) continue; const [ox,oy] = epos(o); if (Math.hypot(ox-hx, oy-hy) <= 85){ o.hp = Math.min(o.max, o.hp + o.max * d.heal); any = true; } }
         if (any) G.fx.push({ k:'ring', x:hx, y:hy, r:85, t:0.5, color:'#2FBF71' }); }
     }
-    if (e.d >= MAP.len){ e.dead = true; e.leaked = true; G.lives -= d.lives; G.fx.push({ k:'hit', t:0.5 }); G.shake = 0.35; }
+    if (e.d >= (d.fly ? MAP.flyLen : MAP.len)){ e.dead = true; e.leaked = true; G.lives -= d.lives; G.fx.push({ k:'hit', t:0.5 }); G.shake = 0.35; }
   }
   // Türme schießen
   for (const t of G.towers){
     t.cd -= dt; if (t.cd > 0) continue;
     const s = towerStats(t), [tx,ty] = t.pos, b = TOWERS[t.type];
     let target = null, bestD = -1;
-    for (const e of G.enemies){ if (e.dead || ENEMY[e.t].ghost) continue; const [ex,ey] = posAt(e.d); if (Math.hypot(ex-tx, ey-ty) <= s.range && e.d > bestD){ bestD = e.d; target = e; } }
+    for (const e of G.enemies){ if (e.dead || isTap(G, e)) continue; const [ex,ey] = epos(e); if (Math.hypot(ex-tx, ey-ty) <= s.range && e.d > bestD){ bestD = e.d; target = e; } }
     if (!target) continue;
     t.cd = s.rate; t.fireT = 0.14;
-    const [ex,ey] = posAt(target.d); t.ang = Math.atan2(ey-ty, ex-tx);
+    const [ex,ey] = epos(target); t.ang = Math.atan2(ey-ty, ex-tx);
     if (s.chain){
       let cur = target, hit = new Set(), from = [tx,ty]; const pts = [from];
       for (let c = 0; c < s.chain && cur; c++){
-        hit.add(cur); const p = posAt(cur.d); damage(G, cur, s.dmg * (c ? 0.7 : 1)); pts.push(p);
+        hit.add(cur); const p = epos(cur); damage(G, cur, s.dmg * (c ? 0.7 : 1)); pts.push(p);
         let nb = null, nd = 1e9;
-        for (const e of G.enemies){ if (e.dead || hit.has(e) || ENEMY[e.t].ghost) continue; const q = posAt(e.d), dd = Math.hypot(q[0]-p[0], q[1]-p[1]); if (dd < 110 && dd < nd){ nd = dd; nb = e; } }
+        for (const e of G.enemies){ if (e.dead || hit.has(e) || isTap(G, e)) continue; const q = epos(e), dd = Math.hypot(q[0]-p[0], q[1]-p[1]); if (dd < 110 && dd < nd){ nd = dd; nb = e; } }
         cur = nb;
       }
       G.bolts.push({ pts, t:0.18 });
@@ -2108,7 +2127,7 @@ function gameStep(G, dt){
 }
 function impact(G, sh){
   if (sh.splash){
-    for (const e of G.enemies){ if (e.dead || ENEMY[e.t].ghost) continue; const [qx,qy] = posAt(e.d); if (Math.hypot(qx-sh.tx, qy-sh.ty) <= sh.splash){ damage(G, e, sh.dmg); if (sh.slow) e.slowT = 1.6; } }
+    for (const e of G.enemies){ if (e.dead || isTap(G, e)) continue; const [qx,qy] = epos(e); if (Math.hypot(qx-sh.tx, qy-sh.ty) <= sh.splash){ damage(G, e, sh.dmg); if (sh.slow) e.slowT = 1.6; } }
     G.fx.push({ k:'boom', x:sh.tx, y:sh.ty, r:sh.splash, t:0.3, color:sh.color });
     if (sh.tt === 'kanone'){ burst(G, sh.tx, sh.ty, '#FFB547', 10, 160); G.shake = Math.max(G.shake, 0.12); }
     if (sh.tt === 'eis') burst(G, sh.tx, sh.ty, '#BFE3FF', 8, 90);
@@ -2118,11 +2137,11 @@ function impact(G, sh){
   }
 }
 function damage(G, e, dmg, pierce, quiet, force){
-  if (e.dead || (ENEMY[e.t].ghost && !force)) return;
-  if (e.sh > 0 && !pierce){ const a = Math.min(e.sh, dmg); e.sh -= a; dmg -= a; if (e.sh <= 0 && !quiet) burst(G, ...posAt(e.d), '#9CC0FF', 8, 110); }
+  if (e.dead || (isTap(G, e) && !force)) return;
+  if (e.sh > 0 && !pierce){ const a = Math.min(e.sh, dmg); e.sh -= a; dmg -= a; if (e.sh <= 0 && !quiet) burst(G, ...epos(e), '#9CC0FF', 8, 110); }
   e.hp -= dmg; if (!quiet) e.hitT = 0.08;
   if (e.hp <= 0){
-    const d = ENEMY[e.t], [x,y] = posAt(e.d), pts = Math.round(d.score * G.smult);
+    const d = ENEMY[e.t], [x,y] = epos(e), pts = Math.round(d.score * G.smult);
     e.dead = true; G.kills++; G.score += pts;
     burst(G, x, y, d.color, d.boss ? 40 : 10, d.boss ? 220 : 130);
     G.floats.push({ x, y: y - e.r, txt: '+' + pts, t: d.boss ? 1.4 : 0.8, big: !!d.boss });
@@ -2183,7 +2202,7 @@ function mapBg(m){
   m.bgc = c; return c;
 }
 function drawGhost(ctx, e, ts){
-  const [x0,y0] = posAt(e.d), r = e.r, gx = x0 + Math.sin(ts/520 + e.ph)*4, gy = y0 - 8 + Math.sin(ts/300 + e.ph)*4;
+  const [x0,y0] = epos(e), r = e.r, gx = x0 + Math.sin(ts/520 + e.ph)*4, gy = y0 - 8 + Math.sin(ts/300 + e.ph)*4;
   ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x0, y0 + r*0.9, r*0.8, r*0.25, 0, 0, 7); ctx.fill();
   const pulse = 0.35 + 0.3 * Math.sin(ts/220 + e.ph);
   ctx.strokeStyle = 'rgba(220,230,255,' + pulse + ')'; ctx.lineWidth = 2; ctx.setLineDash([6,6]); ctx.lineDashOffset = -ts/40;
@@ -2200,7 +2219,7 @@ function drawGhost(ctx, e, ts){
 }
 function drawEnemy(ctx, e, ts){
   if (ENEMY[e.t].ghost) return drawGhost(ctx, e, ts);
-  const d = ENEMY[e.t], [x,y0] = posAt(e.d), [nx,ny] = posAt(e.d + 3);
+  const d = ENEMY[e.t], [x,y0] = epos(e), [nx,ny] = posAt(e.d + 3);
   const fast = e.slowT > 0 ? 0.5 : 1, y = y0 + Math.sin(ts/110*fast + e.ph) * (d.boss ? 1 : 1.8), r = e.r;
   let dx = nx - x, dy = ny - y0; const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(x, y0 + r*0.85, r*0.9, r*0.32, 0, 0, 7); ctx.fill();
@@ -2222,6 +2241,7 @@ function drawEnemy(ctx, e, ts){
     }
   }
   // Zustände
+  if (d.zombie && S.play && S.play.zImm){ const p = 0.4 + 0.3 * Math.sin(ts/220 + e.ph); ctx.strokeStyle = 'rgba(155,212,106,' + p + ')'; ctx.lineWidth = 2; ctx.setLineDash([6,6]); ctx.lineDashOffset = -ts/40; ctx.beginPath(); ctx.arc(x, y, r + 12, 0, 7); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0; }
   if (e.sh > 0){ ctx.strokeStyle = 'rgba(140,180,255,' + (0.45 + 0.5 * e.sh / e.shMax) + ')'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, r + 5, 0, 7); ctx.stroke(); }
   if (e.slowT > 0){ ctx.strokeStyle = '#7CC4FF'; ctx.lineWidth = 2.5; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.arc(x, y, r + 2, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
   if (e.poisonT > 0){ ctx.fillStyle = 'rgba(61,220,132,.8)'; for (let i = 0; i < 3; i++){ const a = ts/300 + i*2.1; ctx.beginPath(); ctx.arc(x + Math.cos(a)*r*0.9, y - r*0.6 + Math.sin(a*1.3)*3 - ((ts/12 + i*20) % 14), 2.4, 0, 7); ctx.fill(); } }
@@ -2264,7 +2284,7 @@ function drawGame(G, ts){
     }
   });
   // Gegner (von hinten nach vorne)
-  const es = G.enemies.slice().sort((a,b) => (ENEMY[a.t].ghost ? 1 : 0) - (ENEMY[b.t].ghost ? 1 : 0) || posAt(a.d)[1] - posAt(b.d)[1]);
+  const es = G.enemies.slice().sort((a,b) => (ENEMY[a.t].fly ? 1 : 0) - (ENEMY[b.t].fly ? 1 : 0) || epos(a)[1] - epos(b)[1]);
   for (const e of es) drawEnemy(ctx, e, ts);
   // Geschosse
   for (const s of G.shots){
@@ -2409,14 +2429,14 @@ function vGame(){
 }
 function vPlay(){
   return `<div class="gwrap"><div class="gstage">
-    <div class="gtop"><button class="back" data-act="gQuit">✕</button><span class="spacer"></span><span id="gwave"></span><button class="pill gsp" data-act="gSpeed" id="gspeed">1×</button></div>
+    <div class="gtop"><button class="gquit" data-act="gQuit" aria-label="Pause">✕</button><span class="spacer"></span><span id="gwave"></span><button class="pill gsp" data-act="gSpeed" id="gspeed">1×</button></div>
     <div class="gmain"><div id="ghud" class="gside"></div><div class="gcanvas"><canvas id="gcv" width="${GW*GR}" height="${GH*GR}"></canvas></div></div>
     <div id="gui"></div>
   </div></div>`;
 }
 function renderGameUI(){
   const G = S.play, el = document.getElementById('gui'); if (!G || !el) return;
-  document.documentElement.classList.toggle('gmopen', !!(G.menu || G.q || G.phase === 'over'));
+  document.documentElement.classList.add('gmopen');
   updateHud();
   const sp = document.getElementById('gspeed'); if (sp) sp.textContent = G.speed + '×';
   const wb = document.getElementById('gwave');
@@ -2446,12 +2466,12 @@ function renderGameUI(){
   } else if (G.q){
     const it = G.q, answered = it.ok !== undefined;
     const lvl = GCFG.levelName[it.level] + ' · ' + GCFG.reward[it.level] + ' 🪙';
-    const label = (G.qKind === 'quiz' ? `Startfrage ${G.quizN+1}/${GCFG.startQuestions}` : G.qKind === 'ghost' ? '👻 Geisterfrage' : `Frage in Welle ${G.wave}`) + ' · ' + lvl + (it.repeat ? ' · 🔁 Wiederholung (+' + GCFG.repeatBonus + ' Bonus)' : '');
+    const label = (G.qKind === 'quiz' ? `Startfrage ${G.quizN+1}/${GCFG.startQuestions}` : G.qKind === 'ghost' ? '👻 Geisterfrage' : G.qKind === 'zombie' ? '🧟 Zombie · deine Fehlerfrage' : `Frage in Welle ${G.wave}`) + ' · ' + lvl + (it.repeat ? ' · 🔁 Wiederholung (+' + GCFG.repeatBonus + ' Bonus)' : '');
     let rew = '';
     if (answered){
       const r = G.reward || {};
-      rew = r.ok ? `<div class="grew ok">${r.ghost ? '👻 Geist besiegt! · ' : ''}+${r.total} 🪙 <small>(${r.base}${r.bonus ? ' + ' + r.bonus + ' Lernbonus' : ''}${r.mult > 1 ? ' × ' + r.mult + ' Serie' : ''})</small></div>`
-                 : r.ghost ? `<div class="grew bad">${r.timeout ? '⏰ Zeit abgelaufen · ' : ''}👻 Der Geist bleibt – und ein weiterer kommt!</div>`
+      rew = r.ok ? `<div class="grew ok">${r.ghost === 'ghost' ? '👻 Geist besiegt! · ' : r.ghost === 'zombie' ? '🧟 Zombie besiegt! · ' : ''}+${r.total} 🪙 <small>(${r.base}${r.bonus ? ' + ' + r.bonus + ' Lernbonus' : ''}${r.mult > 1 ? ' × ' + r.mult + ' Serie' : ''})</small></div>`
+                 : r.ghost ? `<div class="grew bad">${r.timeout ? '⏰ Zeit abgelaufen · ' : ''}${r.ghost === 'zombie' ? '🧟 Der Zombie bleibt – und ein weiterer kommt!' : '👻 Der Geist bleibt – und ein weiterer kommt!'}</div>`
                  : `<div class="grew bad">${r.timeout ? '⏰ Zeit abgelaufen' : 'Keine Münzen'}${r.extra && r.extra.length ? ` · ${r.extra.length === 3 ? '⚠️ starke Gegnergruppe' : '+' + r.extra.length + ' Gegner'} kommt` : ''}</small></div>`;
     }
     h = `<div class="gmodal"><div class="gcard">
@@ -2476,7 +2496,7 @@ function renderGameUI(){
     }
     h = panel || `${wavePreview(G.wave + 1)}<div class="ghint">Tippe auf einen Bauplatz (+), um einen Turm zu bauen, oder auf einen Turm, um ihn zu verbessern. Dann oben „Welle starten“.</div>`;
   }
-  else if (G.phase === 'wave' && G.enemies.some(e => ENEMY[e.t].ghost && !e.dead)) h = `<div class="ghint ghost">👻 Tippe die Geister an – nur eine richtige Antwort besiegt sie!</div>`;
+  else if (G.phase === 'wave' && G.enemies.some(e => !e.dead && isTap(G, e))) h = `<div class="ghint ghost">${G.enemies.some(e => !e.dead && ENEMY[e.t].ghost) ? '👻' : ''}${G.enemies.some(e => !e.dead && ENEMY[e.t].zombie && G.zImm) ? '🧟' : ''} Tippe Geister und Zombies an – nur eine richtige Antwort besiegt sie!</div>`;
   el.innerHTML = h;
 }
 function gameTap(ev){
@@ -2485,8 +2505,8 @@ function gameTap(ev){
   const x = (ev.clientX - r.left) / r.width * GW, y = (ev.clientY - r.top) / r.height * GH;
   if (G.phase === 'wave' && !G.paused){
     let best = null, bd = 48;
-    for (const e of G.enemies){ if (e.dead || !ENEMY[e.t].ghost) continue; const [ex,ey] = posAt(e.d), dd = Math.hypot(ex-x, ey-6-y); if (dd < bd){ bd = dd; best = e; } }
-    if (best){ G.ghost = best; best.caught = true; gameAsk(G, 'ghost'); }
+    for (const e of G.enemies){ if (e.dead || !isTap(G, e)) continue; const [ex,ey] = epos(e), dd = Math.hypot(ex-x, ey-6-y); if (dd < bd){ bd = dd; best = e; } }
+    if (best){ G.ghost = best; best.caught = true; gameAsk(G, ENEMY[best.t].zombie ? 'zombie' : 'ghost'); }
     return;
   }
   if (G.phase !== 'build') return;
