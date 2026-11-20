@@ -1,5 +1,5 @@
 // Kopfsache – Offline-Speicher
-const V = 'kopfsache-v44';
+const V = 'kopfsache-v46';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'touch-icon-2.png', 'app-icon-192-2.png', 'app-icon-512-2.png', 'content.json', 'py-worker.js'];
 const PYC = 'kopfsache-python';
 

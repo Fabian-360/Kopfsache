@@ -521,7 +521,7 @@ button:focus:not(:focus-visible){outline:none}
 (function(){
 "use strict";
 const app = document.getElementById('app');
-const APP_VERSION = '44';
+const APP_VERSION = '46';
 const LS_P = 'kopfsache.progress.v1', LS_M = 'kopfsache.modules.v1';
 const NAME = 'Fabian';
 
@@ -1825,7 +1825,7 @@ const ENEMY = {
   heiler: { name:'Heiler',       hp:1.2,  speed:55,  r:13, color:'#2FBF71', lives:1,  score:25,  heal:0.07, info:'heilt Gegner in der Nähe – zuerst ausschalten', from:8 },
   teiler: { name:'Teiler',       hp:1.8,  speed:50,  r:14, color:'#FF6FB5', lives:2,  score:20,  split:2, info:'zerfällt in 2 Splitter', from:11 },
   geist:  { name:'Geist',        hp:1,    speed:40,  r:16, color:'#DDE6FF', lives:2,  score:40,  ghost:true, fly:true, info:'fliegt auf direktem Weg zur Burg · Türme treffen ihn nicht: antippen + Frage richtig = besiegt, falsch = noch ein Geist', from:2 },
-  zombie: { name:'Zombie',       hp:2.2,  speed:36,  r:15, color:'#6E9A45', lives:2,  score:40,  zombie:true, icon:'🧟', info:'bringt nur Fragen, die du falsch beantwortet hast: antippen + richtig = besiegt, falsch = noch ein Zombie · hast du keine Fehlerfragen, können ihn die Türme abschießen', from:4 },
+  zombie: { name:'Zombie',       hp:2.2,  speed:36,  r:17, color:'#6E9A45', lives:2,  score:40,  zombie:true, icon:'🧟', info:'bringt nur Fragen, die du falsch beantwortet hast: antippen + richtig = besiegt, falsch = noch ein Zombie · hast du keine Fehlerfragen, können ihn die Türme abschießen', from:4 },
   mini:   { name:'Splitter',     hp:0.35, speed:96,  r:8,  color:'#FFA6D5', lives:1,  score:5 },
   koloss: { name:'Koloss',       hp:9,    speed:28,  r:22, color:'#8A7A6A', lives:6,  score:100, shield:2, boss:true, icon:'🗿', info:'Boss in Welle 5, 15, 25 … mit Schild' },
   boss:   { name:'Dämon',        hp:14,   speed:30,  r:24, color:'#FF2A1F', lives:10, score:150, boss:true, icon:'👹', info:'Boss in Welle 10, 20, 30 …' },
@@ -2275,6 +2275,8 @@ function drawEnemy(ctx, e, ts){
   const fast = e.slowT > 0 ? 0.5 : 1, y = y0 + Math.sin(ts/110*fast + e.ph) * (d.boss ? 1 : 1.8), r = e.r;
   let dx = nx - x, dy = ny - y0; const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(x, y0 + r*0.85, r*0.9, r*0.32, 0, 0, 7); ctx.fill();
+  if (d.zombie){ drawZombie(ctx, e, x, y, r, dx, dy, ts); }
+  else {
   // Körper
   const g = ctx.createRadialGradient(x - r*0.35, y - r*0.4, r*0.1, x, y, r);
   g.addColorStop(0, e.hitT > 0 ? '#FFFFFF' : shade(d.color, 40)); g.addColorStop(1, e.hitT > 0 ? '#FFDADA' : d.color);
@@ -2292,6 +2294,7 @@ function drawEnemy(ctx, e, ts){
       ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(ex + dx*er*0.45, ey + dy*er*0.45, er*0.5, 0, 7); ctx.fill();
     }
   }
+  }
   // Zustände
   if (d.zombie && S.play && S.play.zImm){ const p = 0.4 + 0.3 * Math.sin(ts/220 + e.ph); ctx.strokeStyle = 'rgba(155,212,106,' + p + ')'; ctx.lineWidth = 2; ctx.setLineDash([6,6]); ctx.lineDashOffset = -ts/40; ctx.beginPath(); ctx.arc(x, y, r + 12, 0, 7); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0; }
   if (e.sh > 0){ ctx.strokeStyle = 'rgba(140,180,255,' + (0.45 + 0.5 * e.sh / e.shMax) + ')'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, r + 5, 0, 7); ctx.stroke(); }
@@ -2303,6 +2306,33 @@ function drawEnemy(ctx, e, ts){
     ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.fillRect(x-w/2-1, by-1, w+2, 6);
     const f = Math.max(0, e.hp/e.max); ctx.fillStyle = f > 0.5 ? '#2FBF71' : f > 0.25 ? '#FFC83D' : '#FF4545'; ctx.fillRect(x-w/2, by, w*f, 4);
   }
+}
+// Zombie: torkelt, Naht, ein leuchtendes Auge. Giftgrün = antippen (Fehlerfragen), grau-grün = Türme schießen
+function drawZombie(ctx, e, x, y, r, dx, dy, ts){
+  const act = !!(S.play && S.play.zImm), hit = e.hitT > 0;
+  const sway = Math.sin(ts / 260 + e.ph), limp = Math.max(0, Math.sin(ts / 260 + e.ph + 1.2));
+  const cx = x + (-dy) * sway * r * 0.18, cy = y + limp * r * 0.12;
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.atan2(dy, dx) + sway * 0.12);
+  const skin = hit ? '#FFFFFF' : act ? '#7DBB4A' : '#8E9C86';
+  if (act){ ctx.shadowColor = 'rgba(155,212,106,.75)'; ctx.shadowBlur = 12; }
+  // Kopf
+  const g = ctx.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.1, 0, 0, r);
+  g.addColorStop(0, hit ? '#FFFFFF' : shade(act ? '#7DBB4A' : '#8E9C86', 35)); g.addColorStop(1, skin);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
+  ctx.shadowBlur = 0;
+  // Naht quer über den Hinterkopf
+  ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-r * 0.35, -r * 0.7); ctx.quadraticCurveTo(-r * 0.6, 0, -r * 0.35, r * 0.7); ctx.stroke();
+  for (let i = -2; i <= 2; i++){ const t = i / 2.6, px = -r * 0.35 - (1 - t * t) * r * 0.22, py = t * r * 0.7; ctx.beginPath(); ctx.moveTo(px - r * 0.12, py); ctx.lineTo(px + r * 0.12, py); ctx.stroke(); }
+  // Augen: dunkle Höhlen, eins leuchtet, eins ist ein Punkt
+  ctx.fillStyle = 'rgba(20,30,15,.75)';
+  ctx.beginPath(); ctx.arc(r * 0.38, -r * 0.34, r * 0.27, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(r * 0.38, r * 0.34, r * 0.22, 0, 7); ctx.fill();
+  ctx.fillStyle = act ? '#FFE45C' : '#E9E3C0'; ctx.beginPath(); ctx.arc(r * 0.42, -r * 0.34, r * 0.15, 0, 7); ctx.fill();
+  ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(r * 0.47, -r * 0.34, r * 0.06, 0, 7); ctx.fill();
+  ctx.fillStyle = '#EFEFE6'; ctx.beginPath(); ctx.arc(r * 0.4, r * 0.34, r * 0.07, 0, 7); ctx.fill();
+  // schiefer Mund mit Zähnen
+  ctx.strokeStyle = 'rgba(25,20,15,.85)'; ctx.lineWidth = 1.8; ctx.beginPath();
+  ctx.moveTo(r * 0.72, -r * 0.22); ctx.lineTo(r * 0.8, -r * 0.08); ctx.lineTo(r * 0.7, r * 0.04); ctx.lineTo(r * 0.79, r * 0.17); ctx.stroke();
+  ctx.restore();
 }
 function shade(hex, amt){ const n = parseInt(hex.slice(1), 16), c = v => Math.max(0, Math.min(255, v + amt)); return 'rgb(' + c(n>>16) + ',' + c(n>>8&255) + ',' + c(n&255) + ')'; }
 function drawGame(G, ts){
